@@ -9,13 +9,53 @@ public class Contact implements Serializable, Cloneable {
 
     private Long id;
 
-    private String firstName = "";
-    private String lastName = "";
-    private String phone = "";
-    private String email = "";
-    private Date birthDate;
+    private String jobName = "";
+    private String jobDesc = "";
+    private String jobMacro = "";
+    private int jobQuantum = 0;
+    private Date jobFreq;
 
-    public Long getId() {
+    public String getJobName() {
+		return jobName;
+	}
+
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
+
+	public String getJobDesc() {
+		return jobDesc;
+	}
+
+	public void setJobDesc(String jobDesc) {
+		this.jobDesc = jobDesc;
+	}
+
+	public String getJobMacro() {
+		return jobMacro;
+	}
+
+	public void setJobMacro(String jobMacro) {
+		this.jobMacro = jobMacro;
+	}
+
+	public int getJobQuantum() {
+		return jobQuantum;
+	}
+
+	public void setJobQuantum(int jobQuantum) {
+		this.jobQuantum = jobQuantum;
+	}
+
+	public Date getJobFreq() {
+		return jobFreq;
+	}
+
+	public void setJobFreq(Date jobFreq) {
+		this.jobFreq = jobFreq;
+	}
+
+	public Long getId() {
         return id;
     }
 
@@ -23,45 +63,6 @@ public class Contact implements Serializable, Cloneable {
         this.id = id;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Date getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
-    }
 
     @Override
     public Contact clone() throws CloneNotSupportedException {
@@ -74,9 +75,9 @@ public class Contact implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return "Contact{" + "id=" + id + ", firstName=" + firstName
-                + ", lastName=" + lastName + ", phone=" + phone + ", email="
-                + email + ", birthDate=" + birthDate + '}';
+        return "Contact{" + "id=" + id + ", jobName=" + jobName
+                + ", jobDesc=" + jobDesc + ", jobMacro=" + jobMacro + ", jobQuantum="
+                + jobQuantum + ", jobFreq=" + jobFreq + '}';
     }
 
 }

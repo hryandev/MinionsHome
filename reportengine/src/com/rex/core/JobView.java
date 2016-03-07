@@ -2,36 +2,52 @@ package com.rex.core;
 
 import com.rex.backend.Contact;
 import com.rex.backend.ContactService;
+import com.rex.backend.entity.Job;
+import com.rex.backend.service.JobService;
 import com.rex.core.forms.JobForm;
+import com.vaadin.addon.jpacontainer.JPAContainer;
+import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
+import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.filter.Like;
+import com.vaadin.data.util.filter.Or;
+import com.vaadin.data.util.filter.Compare.Equal;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Button.ClickEvent;
 
 @Theme("valo")
 @Title("Job")
 public class JobView extends HorizontalLayout implements View{
+	private static final long serialVersionUID = -7993072104270238504L;
+	
 	/*@WebServlet(urlPatterns = "/job/*")
     @VaadinServletConfiguration(ui = JobUI.class, productionMode = false)
     public static class MyUIServlet extends VaadinServlet {
     }*/
 	
-	private static final long serialVersionUID = 1L;
 	TextField filter = new TextField();
-    public Grid contactList = new Grid();
+    public Grid jobList = new Grid();
     Button newContact = new Button("New job");
 
-    JobForm contactForm = new JobForm(this);
+    JobForm jobForm = new JobForm(this);
     
-    public ContactService service = ContactService.createDemoService();
+    private JPAContainer<Job> job;
+    
+    public ContactService _service = ContactService.createDemoService();
+    public JobService service = JobService.createDemoService();
 	
 	public JobView(){
+		job = JPAContainerFactory.make(Job.class,
+	               ReportEngineUI.PERSISTENCE_UNIT);
 		configureComponents();
 	    buildLayout();
 	}
@@ -43,20 +59,33 @@ public class JobView extends HorizontalLayout implements View{
         * to synchronously handle those events. Vaadin automatically sends
         * only the needed changes to the web page without loading a new page.
         */
-       newContact.addClickListener(e -> contactForm.edit(new Contact()));
-
+       newContact.addClickListener(e -> jobForm.edit(new Job()));
+       
+       //newContact.addClickListener(e -> jobForm.addEntity(new Job()));
+       
        filter.setInputPrompt("Filter jobs...");
-       filter.addTextChangeListener(e -> refreshContacts(e.getText()));
+       filter.addTextChangeListener(e -> updateFilters(e.getText()));
 
-       contactList.setContainerDataSource(new BeanItemContainer<>(Contact.class));
-       contactList.setColumnOrder("firstName", "lastName", "email");
-       contactList.removeColumn("id");
-       contactList.removeColumn("birthDate");
-       contactList.removeColumn("phone");
-       contactList.setSelectionMode(Grid.SelectionMode.SINGLE);
-       contactList.addSelectionListener(e
-               -> contactForm.edit((Contact) contactList.getSelectedRow()));
-       refreshContacts();
+       //jobList.setContainerDataSource(new BeanItemContainer<>(Contact.class));
+       
+       jobList.setContainerDataSource(job);
+       
+       //jobList.setColumnOrder("firstName", "lastName", "email");
+       
+       jobList.setColumnOrder("job_Name", "job_Desc", "job_Macro");
+       
+       jobList.removeColumn("id");
+       //jobList.removeColumn("jobQuantum");
+       //jobList.removeColumn("jobFreq");
+       
+       jobList.setSelectionMode(Grid.SelectionMode.SINGLE);
+       //jobList.addSelectionListener(e
+       //        -> jobForm.edit((Job) jobList.getSelectedRow()));
+       jobList.addSelectionListener(e
+               -> jobForm.edit((Job)jobList.getSelectedRow()));
+       
+      
+       refreshJobs();
 	}
 
 	private void buildLayout() {
@@ -65,20 +94,20 @@ public class JobView extends HorizontalLayout implements View{
 		filter.setWidth("100%");
 		actions.setExpandRatio(filter, 1);
 
-		VerticalLayout left = new VerticalLayout(actions, contactList);
+		VerticalLayout left = new VerticalLayout(actions, jobList);
 		left.setSizeFull();
-		contactList.setSizeFull();
-		left.setExpandRatio(contactList, 1);
+		jobList.setSizeFull();
+		left.setExpandRatio(jobList, 1);
 		
 		//HorizontalSplitPanel sp = new HorizontalSplitPanel();
 		//sp.setSizeFull();
 		
-		HorizontalLayout mainLayout = new HorizontalLayout(left, contactForm);
+		HorizontalLayout mainLayout = new HorizontalLayout(left, jobForm);
 		mainLayout.setSizeFull();
 		mainLayout.setExpandRatio(left, 1);
 		
 		//sp.setFirstComponent(left);
-		//sp.setSecondComponent(contactForm);
+		//sp.setSecondComponent(jobForm);
 		this.setHeight("100%");
 
 		addComponents(mainLayout);
@@ -89,14 +118,43 @@ public class JobView extends HorizontalLayout implements View{
 	}
 	
 
-	public void refreshContacts() {
-        refreshContacts(filter.getValue());
+	public void refreshJobs() {
+        //refreshContacts(filter.getValue());
+		updateFilters(filter.getValue());
     }
 
-    private void refreshContacts(String stringFilter) {
-        contactList.setContainerDataSource(new BeanItemContainer<>(
+    /*private void refreshContacts(String stringFilter) {
+        jobList.setContainerDataSource(new BeanItemContainer<>(
                 Contact.class, service.findAll(stringFilter)));
-        contactForm.setVisible(false);
+    	
+        jobForm.setVisible(false);
+    }*/
+    
+    private void updateFilters(String stringFilter) {
+        job.setApplyFiltersImmediately(false);
+        job.removeAllContainerFilters();
+        /*if (departmentFilter != null) {
+            // two level hierarchy at max in our demo
+            if (departmentFilter.getParent() == null) {
+                job.addContainerFilter(new Equal("department.parent",
+                        departmentFilter));
+            } else {
+                job.addContainerFilter(new Equal("department",
+                        departmentFilter));
+            }
+        }*/
+        if (stringFilter != null && !stringFilter.equals("")) {
+            Or or = new Or(new Like("job_Name", stringFilter + "%", false),
+                    new Like("job_Macro", stringFilter + "%", false));
+            job.addContainerFilter(or);
+        }
+        job.applyFilters();
+        
+        jobForm.setVisible(false);
+    }
+    
+    public JPAContainer<Job> getJob(){
+    	return job;
     }
 
 	@Override

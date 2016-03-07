@@ -9,29 +9,16 @@ import javax.servlet.annotation.WebServlet;
 
 import com.rex.components.valo.Accordions;
 import com.rex.components.valo.ButtonsAndLinks;
-import com.rex.components.valo.CheckBoxes;
-import com.rex.components.valo.ColorPickers;
-import com.rex.components.valo.ComboBoxes;
 import com.rex.components.valo.CommonParts;
 import com.rex.components.valo.DateFields;
-import com.rex.components.valo.Dragging;
-import com.rex.components.valo.Forms;
 import com.rex.components.valo.Icons;
-import com.rex.components.valo.Labels;
 import com.rex.components.valo.MenuBars;
-import com.rex.components.valo.NativeSelects;
-import com.rex.components.valo.Panels;
-import com.rex.components.valo.PopupViews;
-import com.rex.components.valo.Sliders;
-import com.rex.components.valo.SplitPanels;
 import com.rex.components.valo.StringGenerator;
-import com.rex.components.valo.Tables;
 import com.rex.components.valo.Tabsheets;
 import com.rex.components.valo.TestIcon;
-import com.rex.components.valo.TextFields;
-import com.rex.components.valo.Trees;
 import com.rex.components.valo.ValoMenuLayout;
 import com.rex.components.valo.ValoThemeSessionInitListener;
+import com.rex.core.forms.DataGenerator;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -73,6 +60,8 @@ import com.vaadin.ui.themes.ValoTheme;
 @Theme("tests-valo")
 @Title("Report EngineXcel")
 public class ReportEngineUI extends UI {
+	public static final String PERSISTENCE_UNIT = "reportengine";
+	
     private boolean testMode = false;
 
     @WebServlet(value = "/*", asyncSupported = true)
@@ -88,7 +77,12 @@ public class ReportEngineUI extends UI {
     }
 
     private static LinkedHashMap<String, String> themeVariants = new LinkedHashMap<String, String>();
+    
     static {
+    	
+    	
+    	DataGenerator.create();
+    	
         themeVariants.put("tests-valo", "Default");
         themeVariants.put("tests-valo-blueprint", "Blueprint");
         themeVariants.put("tests-valo-dark", "Dark");
