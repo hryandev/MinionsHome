@@ -8,19 +8,19 @@
 	<persistence-unit name="reportengine">
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
-		<!--<properties>
+		<properties>
 			<property name="eclipselink.jdbc.platform"
 				value="org.eclipse.persistence.platform.database.SQLServerPlatform" />
-			<property name="eclipselink.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-			<property name="eclipselink.jdbc.url" value="jdbc:sqlserver://163.50.47.7:1433;databaseName=REXDBT;" />
-			<property name="eclipselink.jdbc.user" value="OPMSDBA" />
-			<property name="eclipselink.jdbc.password" value="OPMSDBA" />
+			<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://163.50.47.7:1433;databaseName=REXDBT;" />
+			<property name="javax.persistence.jdbc.user" value="OPMSDBA" />
+			<property name="javax.persistence.jdbc.password" value="OPMSDBA" />
 			<property name="eclipselink.logging.level" value="FINE" />
-			<property name="eclipselink.ddl-generation" value="drop-and-create-tables" />
+			<!--<property name="eclipselink.ddl-generation" value="drop-and-create-tables" />
 			<property name="eclipselink.ddl-generation.output-mode"
-				value="database" />
-		</properties>-->
-		<properties>
+				value="database" />-->
+		</properties>
+		<!--<properties>
 			<property name="eclipselink.jdbc.platform"
 				value="org.eclipse.persistence.platform.database.H2Platform" />
 			<property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
@@ -31,7 +31,7 @@
 			<property name="eclipselink.ddl-generation" value="drop-and-create-tables" />
 			<property name="eclipselink.ddl-generation.output-mode"
 				value="database" />
-		</properties>
+		</properties>-->
 	</persistence-unit>
 
 </persistence>

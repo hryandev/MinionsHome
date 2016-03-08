@@ -1,28 +1,23 @@
 package com.rex.core;
 
-import com.rex.backend.Contact;
 import com.rex.backend.ContactService;
-import com.rex.backend.entity.Job;
-import com.rex.backend.service.JobService;
+import com.rex.backend.entity.JobTest;
 import com.rex.core.forms.JobForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
-import com.vaadin.data.util.BeanItem;
-import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.filter.Like;
 import com.vaadin.data.util.filter.Or;
-import com.vaadin.data.util.filter.Compare.Equal;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.HorizontalSplitPanel;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Button.ClickEvent;
 
 @Theme("valo")
 @Title("Job")
@@ -38,15 +33,16 @@ public class JobView extends HorizontalLayout implements View{
     public Grid jobList = new Grid();
     Button newContact = new Button("New job");
 
-    JobForm jobForm = new JobForm(this);
+    JobForm jobForm;
     
-    private JPAContainer<Job> job;
+    private JPAContainer<JobTest> job;
     
     public ContactService _service = ContactService.createDemoService();
-    public JobService service = JobService.createDemoService();
+    //public JobService service = JobService.createDemoService();
 	
 	public JobView(){
-		job = JPAContainerFactory.make(Job.class,
+		jobForm = new JobForm(this);
+		job = JPAContainerFactory.make(JobTest.class,
 	               ReportEngineUI.PERSISTENCE_UNIT);
 		configureComponents();
 	    buildLayout();
@@ -59,7 +55,7 @@ public class JobView extends HorizontalLayout implements View{
         * to synchronously handle those events. Vaadin automatically sends
         * only the needed changes to the web page without loading a new page.
         */
-       newContact.addClickListener(e -> jobForm.edit(new Job()));
+       newContact.addClickListener(e -> jobForm.add(new JobTest()));
        
        //newContact.addClickListener(e -> jobForm.addEntity(new Job()));
        
@@ -72,17 +68,18 @@ public class JobView extends HorizontalLayout implements View{
        
        //jobList.setColumnOrder("firstName", "lastName", "email");
        
-       jobList.setColumnOrder("job_Name", "job_Desc", "job_Macro");
+       jobList.setColumnOrder("jobName", "jobDesc", "jobMacro");
        
        jobList.removeColumn("id");
+       jobList.removeColumn("freqs");
        //jobList.removeColumn("jobQuantum");
        //jobList.removeColumn("jobFreq");
        
        jobList.setSelectionMode(Grid.SelectionMode.SINGLE);
        //jobList.addSelectionListener(e
-       //        -> jobForm.edit((Job) jobList.getSelectedRow()));
+       //        -> jobForm.edit((job)jobList.getSelectedRow()));
        jobList.addSelectionListener(e
-               -> jobForm.edit((Job)jobList.getSelectedRow()));
+               -> jobForm.edit(jobList.getSelectedRow()));
        
       
        refreshJobs();
@@ -99,18 +96,29 @@ public class JobView extends HorizontalLayout implements View{
 		jobList.setSizeFull();
 		left.setExpandRatio(jobList, 1);
 		
-		//HorizontalSplitPanel sp = new HorizontalSplitPanel();
-		//sp.setSizeFull();
+		VerticalLayout right = new VerticalLayout();
+		right.addComponent(jobForm);
+		right.setSizeFull();
 		
-		HorizontalLayout mainLayout = new HorizontalLayout(left, jobForm);
-		mainLayout.setSizeFull();
-		mainLayout.setExpandRatio(left, 1);
+		Panel rightPanel = new Panel();
+		rightPanel.setContent(jobForm);
+		rightPanel.setCaption(jobForm.getJob() == null ? "" : jobForm.getJob().getJobName());
 		
-		//sp.setFirstComponent(left);
-		//sp.setSecondComponent(jobForm);
-		this.setHeight("100%");
+		
+		HorizontalSplitPanel sp = new HorizontalSplitPanel(left, rightPanel);
+		sp.setSizeFull();
+		sp.setSplitPosition(50);
+		
+		//HorizontalLayout mainLayout = new HorizontalLayout(left, right);
+		//mainLayout.setSizeFull();
+		//mainLayout.setExpandRatio(left, 1);
+		//mainLayout.setExpandRatio(right, 2);
+		
+		//this.setHeight("100%");
+		setSizeFull();
 
-		addComponents(mainLayout);
+		//addComponents(mainLayout);
+		addComponents(sp);
 		
 		
 		// Split and allow resizing
@@ -144,8 +152,8 @@ public class JobView extends HorizontalLayout implements View{
             }
         }*/
         if (stringFilter != null && !stringFilter.equals("")) {
-            Or or = new Or(new Like("job_Name", stringFilter + "%", false),
-                    new Like("job_Macro", stringFilter + "%", false));
+            Or or = new Or(new Like("jobName", stringFilter + "%", false),
+                    new Like("jobMacro", stringFilter + "%", false));
             job.addContainerFilter(or);
         }
         job.applyFilters();
@@ -153,7 +161,7 @@ public class JobView extends HorizontalLayout implements View{
         jobForm.setVisible(false);
     }
     
-    public JPAContainer<Job> getJob(){
+    public JPAContainer<JobTest> getJob(){
     	return job;
     }
 

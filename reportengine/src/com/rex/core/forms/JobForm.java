@@ -1,20 +1,26 @@
 package com.rex.core.forms;
 
-import com.rex.backend.entity.Job;
+import com.rex.backend.entity.FreqTest;
+import com.rex.backend.entity.JobTest;
 import com.rex.core.JobView;
+import com.rex.core.ReportEngineUI;
+import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
+import com.vaadin.data.Item;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.util.BeanItem;
 import com.vaadin.event.ShortcutAction;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class JobForm extends FormLayout {
@@ -22,31 +28,38 @@ public class JobForm extends FormLayout {
 	
 	Button save = new Button("Save", this::save);
     Button cancel = new Button("Cancel", this::cancel);
-    TextField job_Name = new TextField("Job Name");
-    TextField job_Desc = new TextField("Job Description");
-    TextField job_Macro = new TextField("Job Macro");
-    //TextField job_Qty = new TextField("Job Quantum");
-    //DateField job_Freq = new DateField("Job Frequency");
-
-    Job job;
+    TextField jobName = new TextField("Job Name");
+    TextField jobDesc = new TextField("Job Description");
+    TextField jobMacro = new TextField("Job Macro");
+    CheckBox jobFlag = new CheckBox("Activate");
     
-    JobView jobView;
+    private Table freqTable;
+    
+    private JobTest job;
+    private JobView jobView;
+    private boolean addFlag = false;
+    
+    FieldGroup binder;
 
     // Easily bind forms to beans and manage validation and buffering
-    BeanFieldGroup<Job> formFieldBindings;
+    private BeanFieldGroup<JobTest> formFieldBindings;
+    private JPAContainer<FreqTest> freqs;
 
-    public JobForm(JobView job) {
-    	this.jobView = job;
+    public JobForm(JobView jobView) {
+    	this.jobView = jobView;
         configureComponents();
         buildLayout();
     }
 
     private void configureComponents() {
-        /* Highlight primary actions.
-         *
-         * With Vaadin built-in styles you can highlight the primary save button
-         * and give it a keyboard shortcut for a better UX.
-         */
+    	freqs = JPAContainerFactory.make(FreqTest.class,
+    			ReportEngineUI.PERSISTENCE_UNIT);
+    	freqTable = new Table("Frequency", freqs);
+    	freqTable.setSelectable(true);
+    	freqTable.setImmediate(true);
+    	
+    	freqTable.setVisibleColumns(new Object[] {"freqName", "freqDesc"});
+    	
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
         setVisible(false);
@@ -58,25 +71,49 @@ public class JobForm extends FormLayout {
 
         HorizontalLayout actions = new HorizontalLayout(save, cancel);
         actions.setSpacing(true);
+        
+        VerticalLayout tableArea = new VerticalLayout();
+        HorizontalLayout toolbar = new HorizontalLayout();
+        Button newButton = new Button("Add");
+        Button delButton = new Button("Delete");
+        toolbar.addComponent(newButton);
+        toolbar.addComponent(delButton);
+        
+        delButton.addClickListener(e -> freqs.removeItem(freqTable.getValue()));
+        
+        tableArea.addComponent(toolbar);
+        tableArea.addComponent(freqTable);
+        tableArea.setExpandRatio(freqTable, 1);
 
-		addComponents(actions, job_Name, job_Desc, job_Macro);
+		addComponents(actions, jobName, jobDesc, jobMacro, jobFlag, tableArea);
+		setSizeFull();
+		setMargin(true);
+		setSpacing(true);
+		
     }
 
     public void save(Button.ClickEvent event) {
         try {
             // Commit the fields from UI to DAO
-            formFieldBindings.commit();
+        	if(addFlag){
+        		formFieldBindings.commit();
+        		jobView.getJob().addEntity(job);
+        	}
+        	else{
+        		binder.commit();
+        	}
             
             // Save DAO to backend with direct synchronous service API
             //getUI().service.save(contact);
             //jobView.service.save(_job);
-            jobView.getJob().addEntity(job);
+            //jobView.getJob().addEntity(job);
 
             String msg = String.format("Saved '%s %s'.",
-            		job.getJob_Name(),
-                    job.getJob_Macro());
+            		jobName.getValue(),
+            		jobMacro.getValue());
             Notification.show(msg,Type.TRAY_NOTIFICATION);
             jobView.refreshJobs();
+            addFlag = false;
         } catch (FieldGroup.CommitException e) {
             // Validation exceptions could be shown here
         }
@@ -88,15 +125,38 @@ public class JobForm extends FormLayout {
         jobView.jobList.select(null);
     }
 
-    public void edit(Job job) {
+    public void add(JobTest job) {
         this.job = job;
+        addFlag = true;
         if(job != null) {
             // Bind the properties of the contact POJO to fiels in this form
             formFieldBindings = BeanFieldGroup.bindFieldsBuffered(job, this);
-            job_Name.focus();
+            jobName.focus();
         }
         setVisible(job != null);
     }
-
+    
+    public void edit(Object item){
+    	Item jobItem = jobView.getJob().getItem(item);
+    	if(jobItem != null) {
+    		binder = new FieldGroup(jobItem);
+    		binder.setBuffered(true);
+    		
+    		binder.bind(jobName, "jobName");
+    		binder.bind(jobDesc, "jobDesc");
+    		binder.bind(jobMacro, "jobMacro");
+    		
+    		//formFieldBindings = BeanFieldGroup.bindFieldsBuffered(jobItem, this);
+    		//formFieldBindings = new BeanFieldGroup<JobTest>(JobTest.class);
+    		
+    		jobName.focus();
+    	}
+    	setVisible(jobItem != null);
+    	
+    }
+    
+    public JobTest getJob(){
+    	return job;
+    }
 
 }

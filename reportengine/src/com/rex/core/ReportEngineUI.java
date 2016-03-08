@@ -18,7 +18,7 @@ import com.rex.components.valo.Tabsheets;
 import com.rex.components.valo.TestIcon;
 import com.rex.components.valo.ValoMenuLayout;
 import com.rex.components.valo.ValoThemeSessionInitListener;
-import com.rex.core.forms.DataGenerator;
+import com.rex.core.DataGenerator;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -75,13 +75,11 @@ public class ReportEngineUI extends UI {
                     new ValoThemeSessionInitListener());
         }
     }
-
+    
     private static LinkedHashMap<String, String> themeVariants = new LinkedHashMap<String, String>();
     
     static {
-    	
-    	
-    	DataGenerator.create();
+    	//DataGenerator.create();
     	
         themeVariants.put("tests-valo", "Default");
         themeVariants.put("tests-valo-blueprint", "Blueprint");
@@ -136,7 +134,7 @@ public class ReportEngineUI extends UI {
         setContent(root);
         setTheme("tests-valo-light");
         root.setWidth("100%");
-        //root.setSizeUndefined();
+        
         
         root.setComponentAlignment(viewDisplay, Alignment.MIDDLE_LEFT);
         
