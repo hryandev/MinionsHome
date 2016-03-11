@@ -1,6 +1,5 @@
 package com.rex.core;
 
-import com.rex.backend.ContactService;
 import com.rex.backend.entity.Job;
 import com.rex.core.forms.JobForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
@@ -25,11 +24,6 @@ import com.vaadin.ui.VerticalLayout;
 public class JobView extends HorizontalLayout implements View{
 	private static final long serialVersionUID = -7993072104270238504L;
 	
-	/*@WebServlet(urlPatterns = "/job/*")
-    @VaadinServletConfiguration(ui = JobUI.class, productionMode = false)
-    public static class MyUIServlet extends VaadinServlet {
-    }*/
-	
 	TextField filter = new TextField();
     public Grid jobList = new Grid();
     Button newContact = new Button("New job");
@@ -39,7 +33,6 @@ public class JobView extends HorizontalLayout implements View{
     
     private JPAContainer<Job> job;
     
-    public ContactService _service = ContactService.createDemoService();
     //public JobService service = JobService.createDemoService();
 	
 	public JobView(){
