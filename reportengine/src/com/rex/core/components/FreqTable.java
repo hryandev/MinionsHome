@@ -1,79 +1,113 @@
 package com.rex.core.components;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.rex.core.components.FreqsListWindow.EditorSavedEvent;
+import com.rex.core.components.FreqsListWindow.EditorSavedListener;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.Column;
+import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.VerticalLayout;
 
-import com.rex.backend.entity.FreqTest;
-import com.vaadin.data.Container;
-import com.vaadin.data.Property;
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.data.util.converter.Converter.ConversionException;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.CustomField;
-import com.vaadin.ui.Field;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.TableFieldFactory;
-import com.vaadin.ui.TextField;
+public class FreqTable extends VerticalLayout{
+	
+	Grid freqList;
+	
+	/*public ValueChangeListener update = new ValueChangeListener() {
 
-public class FreqTable extends CustomField<Object>{
-	private static final long serialVersionUID = 605765897038807528L;
+		@Override
+		public void valueChange(ValueChangeEvent event) {
+			// TODO Auto-generated method stub
+			if (freqList == null) {
+				freqList = new Grid("Frequency");
+				freqList.setContainerDataSource(container);
+                addComponent(freqList);
+            }
+		}
+	};*/
 	
-	Table table = new Table();
-    BeanItemContainer<FreqTest> freqContainer = new BeanItemContainer<FreqTest>(FreqTest.class);
+	public FreqTable(){
+		freqList = new Grid("Frequency");
+		
+		configure();
+		buildLayout();
+	}
 	
-    public FreqTable() {
-        table.setContainerDataSource(freqContainer);
-        table.setTableFieldFactory(new TableFieldFactory() {
-            @Override
-            public Field createField(Container container, Object itemId,
-                    Object propertyId, Component uiContext) {
-                TextField field = new TextField();
-                if ("name".equals(propertyId))
-                    field.setWidth("10em");
-                else if ("year".equals(propertyId))
-                    field.setWidth("4em");
-                field.setImmediate(true);
-                return field;
+	public void configure(){
+		
+		//freqList.setContainerDataSource(null);
+        
+		freqList.setSelectionMode(SelectionMode.MULTI);
+		
+		freqList.setImmediate(true);
+		
+		for (Column c : freqList.getColumns()) {
+            //if (!c.getPropertyId().equals("icon")) {
+                c.setSortable(true);
+            //}
+            c.setHidable(true);
+        }
+		
+		freqList.setColumnReorderingAllowed(true);
+		freqList.setHeightByRows(6);
+		//freqList.setSizeUndefined();
+	}
+	
+	public void buildLayout(){
+		HorizontalLayout toolbar = new HorizontalLayout();
+        Button newButton = new Button("Add");
+        Button delButton = new Button("Delete");
+        toolbar.addComponent(newButton);
+        toolbar.addComponent(delButton);
+        
+        //addComponent(toolbar);
+        addComponent(freqList);
+        //setExpandRatio(freqList, 1);
+        //newButton.addClickListener(e -> openFreqsWindow());
+        
+		
+		setMargin(true);
+		setSpacing(true);
+	}
+	
+	public Grid getFreqList(){
+		return freqList;
+	}
+		
+	public void openFreqsWindow(){
+    	FreqsListWindow flw = new FreqsListWindow();
+    	getUI().addWindow(flw);
+    	flw.center();
+        flw.focus();
+        //setEnabled(false);
+ 
+    	flw.addListener(new EditorSavedListener() {
+            public void editorSaved(EditorSavedEvent event) {
+            	//freqContainer.addAll(flw.getFreqList());
+            	
+				/*for (Iterator iterator = flw.getFreqList().iterator(); iterator.hasNext();) {
+					Freq item = (Freq) iterator.next();
+					
+					freqContainer.addBean(item);
+				}*/
+            	
+				//freqContainer.refreshItems();
+				//freqTable.setEnabled(true);
+				//freqList.setContainerDataSource(container);
             }
         });
-        table.setVisibleColumns(new Object[]{"name", "year"});
-        table.setEditable(!isReadOnly());
-        //setCompositionRoot(table);
-    }
-    
-    @Override
-    public void setPropertyDataSource(Property newDataSource) {
-        Object value = newDataSource.getValue();
-        if (value instanceof List<?>) {
-            @SuppressWarnings("unchecked")
-            List<FreqTest> beans = (List<FreqTest>) value;
-            freqContainer.removeAllItems();
-            freqContainer.addAll(beans);
-            table.setPageLength(beans.size());
-        } else
-            throw new ConversionException("Invalid type");
-
-        super.setPropertyDataSource(newDataSource);
-    }
-    
-    @Override
-    public Object getValue() {
-        ArrayList<FreqTest> beans = new ArrayList<FreqTest>(); 
-        for (Object itemId: freqContainer.getItemIds())
-            beans.add(freqContainer.getItem(itemId).getBean());
-        return beans;
-    }
-    
-	@Override
-	protected Component initContent() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Class getType() {
-		// TODO Auto-generated method stub
-		return ArrayList.class;
+    }	
+	
+	public FreqTable update(IndexedContainer container){
+		removeComponent(freqList);
+		freqList = new Grid("Frequency");
+		freqList.setContainerDataSource(container);
+		addComponent(freqList);
+        
+		return this;
 	}
 
 }

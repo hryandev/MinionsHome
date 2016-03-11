@@ -7,18 +7,13 @@ import java.util.Map.Entry;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
-import com.rex.components.valo.Accordions;
-import com.rex.components.valo.ButtonsAndLinks;
 import com.rex.components.valo.CommonParts;
-import com.rex.components.valo.DateFields;
 import com.rex.components.valo.Icons;
-import com.rex.components.valo.MenuBars;
 import com.rex.components.valo.StringGenerator;
-import com.rex.components.valo.Tabsheets;
 import com.rex.components.valo.TestIcon;
 import com.rex.components.valo.ValoMenuLayout;
 import com.rex.components.valo.ValoThemeSessionInitListener;
-import com.rex.core.DataGenerator;
+import com.rex.core.forms.MainView;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -133,8 +128,6 @@ public class ReportEngineUI extends UI {
         getPage().setTitle("Report EngineXcel");
         setContent(root);
         setTheme("tests-valo-light");
-        root.setWidth("100%");
-        
         
         root.setComponentAlignment(viewDisplay, Alignment.MIDDLE_LEFT);
         
@@ -143,24 +136,24 @@ public class ReportEngineUI extends UI {
         
         navigator = new Navigator(this, viewDisplay);
 
-        navigator.addView("reportlist", CommonParts.class);
+        navigator.addView("reportlist", MainView.class);
         navigator.addView("job", JobView.class);
-        navigator.addView("task", ButtonsAndLinks.class);
+        //navigator.addView("task", ButtonsAndLinks.class);
         navigator.addView("frequency", JobView.class);
-        navigator.addView("user", DateFields.class);
+        //navigator.addView("user", DateFields.class);
         //navigator.addView("comboboxes", ComboBoxes.class);
         //navigator.addView("checkboxes", CheckBoxes.class);
         //navigator.addView("sliders", Sliders.class);
-        navigator.addView("group", MenuBars.class);
+        //navigator.addView("group", MenuBars.class);
         //navigator.addView("panels", Panels.class);
         //navigator.addView("trees", Trees.class);
         //navigator.addView("tables", Tables.class);
         //navigator.addView("spanels", SplitPanels.class);
-        navigator.addView("kit1", Tabsheets.class);
-        navigator.addView("kit2", Accordions.class);
+        //navigator.addView("kit1", Tabsheets.class);
+        //navigator.addView("kit2", Tables.class);
         //navigator.addView("colorpickers", ColorPickers.class);
         //navigator.addView("selects", NativeSelects.class);
-        navigator.addView("kit3", JobView.class);
+        //navigator.addView("kit3", JobView.class);
         //navigator.addView("popupviews", PopupViews.class);
         //navigator.addView("dragging", Dragging.class);
 

@@ -1,65 +1,101 @@
 package com.rex.backend.entity;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
-import org.apache.commons.beanutils.BeanUtils;
 
 @Entity
 public class Job {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+	@Column(name = "JOB_ID")
+    private String id;
 	
 	@NotNull
-    @Size(min = 2, max = 24)
-    private String job_Name;
-    @Size(min = 2, max = 24)
-    private String job_Desc;
+	@Column(name = "JOB_NAME")
+    private String jobName;
+	
+	@Column(name = "JOB_DESC")
+    private String jobDesc;
     
-    @Size(min = 2, max = 24)
-    private String job_Macro;
+	@Column(name = "JOB_MACRO")
+    private String jobMacro;
+	
+	@ManyToMany()
+    @JoinTable(name = "JOBFREQ",joinColumns = @JoinColumn(name = "JOB_ID"),inverseJoinColumns = @JoinColumn(name = "FREQ_ID"))
+    private List<Freq> freqs;
+	
+	//@OneToMany(mappedBy="job",cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+	//private List<JobFreq> jfRelation = new ArrayList<>();
 
-    
-    
-    public String getJob_Name() {
-		return job_Name;
+	
+	public Job(){
+		
+	}
+	
+	public Job(String id , String name, String macro){
+		this.id = id;
+		jobName = name;
+		jobMacro = macro;
 	}
 
-	public void setJob_Name(String job_Name) {
-		this.job_Name = job_Name;
-	}
-
-	public String getJob_Desc() {
-		return job_Desc;
-	}
-
-	public void setJob_Desc(String job_Desc) {
-		this.job_Desc = job_Desc;
-	}
-
-	public String getJob_Macro() {
-		return job_Macro;
-	}
-
-	public void setJob_Macro(String job_Macro) {
-		this.job_Macro = job_Macro;
-	}
-
-
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
+	public String getJobName() {
+		return jobName;
+	}
+
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
+
+	public String getJobDesc() {
+		return jobDesc;
+	}
+
+	public void setJobDesc(String jobDesc) {
+		this.jobDesc = jobDesc;
+	}
+
+	public String getJobMacro() {
+		return jobMacro;
+	}
+
+	public void setJobMacro(String jobMacro) {
+		this.jobMacro = jobMacro;
+	}
+
+	public List<Freq> getFreqs() {
+		return freqs;
+	}
+
+	public void setFreqs(List<Freq> freqs) {
+		this.freqs = freqs;
+	}
+    
+	public void addFreq(Freq freq) {
+	      if (!getFreqs().contains(freq)) {
+	          getFreqs().add(freq);
+	      }
+	}
+	
 }

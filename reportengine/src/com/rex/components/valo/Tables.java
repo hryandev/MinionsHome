@@ -227,7 +227,7 @@ public class Tables extends VerticalLayout implements View {
                 public Object generateCell(Table source, Object itemId,
                         Object columnId) {
                     TextField tf = new TextField();
-                    tf.setInputPrompt("Type here…");
+                    tf.setInputPrompt("Type here");
                     // tf.addStyleName("compact");
                     if ((Integer) itemId % 2 == 0) {
                         tf.addStyleName("borderless");

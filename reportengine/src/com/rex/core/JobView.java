@@ -1,7 +1,7 @@
 package com.rex.core;
 
 import com.rex.backend.ContactService;
-import com.rex.backend.entity.JobTest;
+import com.rex.backend.entity.Job;
 import com.rex.core.forms.JobForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
@@ -15,6 +15,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -34,16 +35,19 @@ public class JobView extends HorizontalLayout implements View{
     Button newContact = new Button("New job");
 
     JobForm jobForm;
+    Panel rightPanel;
     
-    private JPAContainer<JobTest> job;
+    private JPAContainer<Job> job;
     
     public ContactService _service = ContactService.createDemoService();
     //public JobService service = JobService.createDemoService();
 	
 	public JobView(){
 		jobForm = new JobForm(this);
-		job = JPAContainerFactory.make(JobTest.class,
+		rightPanel = new Panel();
+		job = JPAContainerFactory.make(Job.class,
 	               ReportEngineUI.PERSISTENCE_UNIT);
+		//job = new HierarchicalJobContainer();
 		configureComponents();
 	    buildLayout();
 	}
@@ -55,7 +59,7 @@ public class JobView extends HorizontalLayout implements View{
         * to synchronously handle those events. Vaadin automatically sends
         * only the needed changes to the web page without loading a new page.
         */
-       newContact.addClickListener(e -> jobForm.add(new JobTest()));
+       newContact.addClickListener(e -> jobForm.add(new Job()));
        
        //newContact.addClickListener(e -> jobForm.addEntity(new Job()));
        
@@ -81,7 +85,6 @@ public class JobView extends HorizontalLayout implements View{
        jobList.addSelectionListener(e
                -> jobForm.edit(jobList.getSelectedRow()));
        
-      
        refreshJobs();
 	}
 
@@ -100,10 +103,15 @@ public class JobView extends HorizontalLayout implements View{
 		right.addComponent(jobForm);
 		right.setSizeFull();
 		
-		Panel rightPanel = new Panel();
-		rightPanel.setContent(jobForm);
-		rightPanel.setCaption(jobForm.getJob() == null ? "" : jobForm.getJob().getJobName());
+		/*HorizontalLayout panelCaption = new HorizontalLayout();
+		panelCaption.setMargin(true);
+		panelCaption.setSpacing(true);
+		panelCaption.addComponent(new Label("Test Panel Caption"));
+		panelCaption.addComponent(new Button("Button1"));*/
 		
+		rightPanel.setWidth("700px");
+		rightPanel.setContent(jobForm);
+		rightPanel.setVisible(false);
 		
 		HorizontalSplitPanel sp = new HorizontalSplitPanel(left, rightPanel);
 		sp.setSizeFull();
@@ -159,10 +167,19 @@ public class JobView extends HorizontalLayout implements View{
         job.applyFilters();
         
         jobForm.setVisible(false);
+        rightPanel.setVisible(false);
     }
     
-    public JPAContainer<JobTest> getJob(){
+    public JPAContainer<Job> getJob(){
     	return job;
+    }
+    
+    public Panel getJobPanel(){
+    	return rightPanel;
+    }
+    
+    public Grid getJobList(){
+    	return jobList;
     }
 
 	@Override

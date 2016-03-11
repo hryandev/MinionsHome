@@ -8,8 +8,7 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 
-import com.rex.backend.entity.FreqTest;
-import com.rex.backend.entity.JobTest;
+import com.rex.backend.entity.Job;
 
 public class DataGenerator {
 	
@@ -47,42 +46,37 @@ public class DataGenerator {
 				"414-1417 Fringilla Street", "Ap #183-928 Scelerisque Road",
 				"561-9262 Iaculis Avenue" };
 
-	public static void create() {
+		public static void create() {
 
-		EntityManager em = Persistence.createEntityManagerFactory("reportengine").createEntityManager();
+			EntityManager em = Persistence
+					.createEntityManagerFactory("reportengine")
+					.createEntityManager();
 
-		em.getTransaction().begin();
-		Random r = new Random(0);
-		Calendar cal = Calendar.getInstance();
-
-		for (String g : groupsNames) {
-			JobTest group = new JobTest();
-			group.setJobName(g);
-			group.setJobDesc(fnames[r.nextInt(fnames.length)]);
-			group.setJobMacro(lnames[r.nextInt(lnames.length)]);
-			Set<FreqTest> gPersons = new HashSet<FreqTest>();
-
-			int amount = r.nextInt(15) + 1;
-			for (int i = 0; i < amount; i++) {
-				FreqTest p = new FreqTest();
-
-				int n = r.nextInt(100000);
-				if (n < 10000) {
-					n += 10000;
+			em.getTransaction().begin();
+			Random r = new Random(0);
+			Calendar cal = Calendar.getInstance();
+			
+			for (String o : officeNames) {
+					Set<Job> gPersons = new HashSet<Job>();
+					
+					int amount = r.nextInt(15) + 1;
+					for (int i = 0; i < amount; i++) {
+						Job p = new Job();
+						p.setJobName(fnames[r.nextInt(fnames.length)]);
+						p.setJobDesc(lnames[r.nextInt(lnames.length)]);
+						p.setJobMacro(cities[r.nextInt(cities.length)]);
+						
+						int n = r.nextInt(100000);
+						if (n < 10000) {
+							n += 10000;
+						}
+						
+						gPersons.add(p);
+						em.persist(p);
+					}
 				}
-
-				p.setFreqName(fnames[r.nextInt(fnames.length)]);
-				p.setFreqDesc(lnames[r.nextInt(lnames.length)]);
-				p.setJobTest(group);
-
-				gPersons.add(p);
-				em.persist(p);
-			}
-			group.setFreqs(gPersons);
-			em.persist(group);
+			
+			em.getTransaction().commit();
 		}
-
-		em.getTransaction().commit();
-	}
 		
 }
