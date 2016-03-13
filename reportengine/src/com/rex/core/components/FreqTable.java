@@ -1,9 +1,5 @@
 package com.rex.core.components;
 
-import com.rex.core.components.FreqsListWindow.EditorSavedEvent;
-import com.rex.core.components.FreqsListWindow.EditorSavedListener;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
@@ -15,6 +11,8 @@ import com.vaadin.ui.VerticalLayout;
 public class FreqTable extends VerticalLayout{
 	
 	Grid freqList;
+	
+	IndexedContainer container = new IndexedContainer();
 	
 	/*public ValueChangeListener update = new ValueChangeListener() {
 
@@ -38,7 +36,6 @@ public class FreqTable extends VerticalLayout{
 	
 	public void configure(){
 		
-		//freqList.setContainerDataSource(null);
         
 		freqList.setSelectionMode(SelectionMode.MULTI);
 		
@@ -53,7 +50,7 @@ public class FreqTable extends VerticalLayout{
 		
 		freqList.setColumnReorderingAllowed(true);
 		freqList.setHeightByRows(6);
-		//freqList.setSizeUndefined();
+		
 	}
 	
 	public void buildLayout(){
@@ -63,51 +60,59 @@ public class FreqTable extends VerticalLayout{
         toolbar.addComponent(newButton);
         toolbar.addComponent(delButton);
         
-        //addComponent(toolbar);
-        addComponent(freqList);
-        //setExpandRatio(freqList, 1);
-        //newButton.addClickListener(e -> openFreqsWindow());
+        //toolbar.setWidth("100px");
+        //toolbar.setHeight("50px");
         
+        //freqList.setWidth("200px");
+        //freqList.setHeight("500px");
+        
+        addComponent(toolbar);
+        addComponent(freqList);
+        
+        
+        //setExpandRatio(toolbar, 1);
+        
+        //setComponentAlignment(freqList, Alignment.BOTTOM_LEFT);
+        
+        newButton.addClickListener(e -> openFreqsWindow());
+        
+        setSizeFull();
 		
-		setMargin(true);
+		//setMargin(true);
 		setSpacing(true);
 	}
 	
 	public Grid getFreqList(){
 		return freqList;
 	}
+	
+	public IndexedContainer getOrgContainer(){
+		return container;
+	}
 		
 	public void openFreqsWindow(){
-    	FreqsListWindow flw = new FreqsListWindow();
+    	FreqsListWindow flw = new FreqsListWindow(this);
     	getUI().addWindow(flw);
     	flw.center();
         flw.focus();
-        //setEnabled(false);
- 
-    	flw.addListener(new EditorSavedListener() {
-            public void editorSaved(EditorSavedEvent event) {
-            	//freqContainer.addAll(flw.getFreqList());
-            	
-				/*for (Iterator iterator = flw.getFreqList().iterator(); iterator.hasNext();) {
-					Freq item = (Freq) iterator.next();
-					
-					freqContainer.addBean(item);
-				}*/
-            	
-				//freqContainer.refreshItems();
-				//freqTable.setEnabled(true);
-				//freqList.setContainerDataSource(container);
-            }
-        });
+        
+        /*FreqsListWindow flw = new FreqsListWindow(job, freqTable);
+    	getUI().addWindow(flw);
+    	flw.center();
+        flw.focus();*/
+        
     }	
 	
-	public FreqTable update(IndexedContainer container){
+	public void update(IndexedContainer container){
+		this.container = container;
+		
 		removeComponent(freqList);
 		freqList = new Grid("Frequency");
 		freqList.setContainerDataSource(container);
+		
+		freqList.removeColumn("id");
 		addComponent(freqList);
         
-		return this;
 	}
 
 }

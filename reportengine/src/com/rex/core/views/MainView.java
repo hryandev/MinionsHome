@@ -1,4 +1,4 @@
-package com.rex.core.forms;
+package com.rex.core.views;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;

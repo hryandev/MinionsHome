@@ -17,30 +17,25 @@ package com.rex.core.components;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 
 import com.rex.backend.entity.Freq;
 import com.rex.backend.entity.Job;
-import com.rex.backend.service.JobService;
 import com.rex.core.ReportEngineUI;
-import com.rex.core.common.Common;
 import com.rex.core.forms.JobForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
+import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Item;
+import com.vaadin.data.Property;
+import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.data.util.filter.Not;
+import com.vaadin.data.util.filter.SimpleStringFilter;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
@@ -49,15 +44,15 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
 
 	private FreqTable freqTable;
 	private Grid freqsList;
+	
 	private JPAContainer<Freq> freqs;
+	IndexedContainer orgContainer;
 	//private final Item personItem;
     private Button saveButton;
     private Button cancelButton;
     
-    RefreshableBeanItemContainer<Freq> freqContainer;
     JobForm form;
     
-    private Job job;
 
     
     public FreqsListWindow() {
@@ -67,13 +62,22 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     	configureComponents();
         buildLayout();
     }
+    
+    public FreqsListWindow(FreqTable freqTable) {
+    	freqs = JPAContainerFactory.make(Freq.class,
+    			ReportEngineUI.PERSISTENCE_UNIT);
+    	
+    	this.freqTable = freqTable;
+    	orgContainer = freqTable.getOrgContainer();
+    	configureComponents();
+        buildLayout();
+    }
 
     public FreqsListWindow(Job job, FreqTable freqTable) {
     	freqs = JPAContainerFactory.make(Freq.class,
     			ReportEngineUI.PERSISTENCE_UNIT);
     	
     	this.freqTable = freqTable;
-        this.job = job;
     	configureComponents();
         buildLayout();
     }
@@ -81,7 +85,24 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     
     public void configureComponents(){
     	freqsList = new Grid();
+    	
+    	IndexedContainer container = (IndexedContainer) freqTable.getFreqList().getContainerDataSource();
+    	//List<String> filters = new ArrayList<>();
+    	
+    	//System.out.println("container="+container.size());
+    	
+    	for(int i = 0; i < orgContainer.size(); i++){
+    		Item item = orgContainer.getItem(i+1);
+    		Property<String> freqID = item.getItemProperty("id");
+    		
+    		//System.out.println("freqID="+freqID.getValue());
+    		
+    		Filter filter = new Not(new SimpleStringFilter("id", freqID.getValue(), true, false));
+    		freqs.addContainerFilter(filter);
+    	}
+    	
     	freqsList.setContainerDataSource(freqs);
+    	
     	freqsList.setColumnOrder("freqName", "freqDesc");
     	
     	freqsList.removeColumn("id");
@@ -132,10 +153,9 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     @Override
     public void buttonClick(ClickEvent event) {
         if (event.getButton() == saveButton) {       	
-        	//job.setFreqs(new HashSet(freqsList.getSelectedRows()));
-        	//List<Freq> freqs = getFreqList();
-        	saveFreqs(getFreqList());
-        	freqTable.update(Common.getFreqs(job));
+        	//saveFreqs(getFreqList());
+        	
+        	freqTable.update(getFreqList());
             
         } else if (event.getButton() == cancelButton) {
             //editorForm.discard();
@@ -159,10 +179,7 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
         removeListener(EditorSavedEvent.class, listener);
     }
     
-    public void saveFreqs(List<Freq> freqs){
-        JobService jobService = new JobService();
-        jobService.updateFreqs(job.getId(), freqs);
-    }
+    
 
     public static class EditorSavedEvent<T> extends Component.Event {
 
@@ -188,20 +205,54 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
         public void editorSaved(EditorSavedEvent event);
     }
     
-    public List<Freq> getFreqList(){
-    	List<Freq> selected = new ArrayList<Freq>();
+    public IndexedContainer getFreqList(){
+    	/*IndexedContainer container = new IndexedContainer();
+    	container.addContainerProperty("id", String.class, null);
+    	container.addContainerProperty("freqName", String.class, null);
+        container.addContainerProperty("freqDesc", String.class, null);*/
     	
+    	//List<Freq> selected = new ArrayList<Freq>();
+    	
+    	int j = orgContainer.size();
     	for(Object o : freqsList.getSelectedRows()){
     		Freq freq = freqs.getItem(o).getEntity();
-    		selected.add(freq);
+    		Item item = orgContainer.addItem(j+1);
+    		item.getItemProperty("id").setValue(freq.getId());
+        	item.getItemProperty("freqName").setValue(freq.getFreqName());
+        	item.getItemProperty("freqDesc").setValue(freq.getFreqDesc());
+    		
+        	j++;
+    		//selected.add(freq);
     	}
     	
-    	return selected;
+    	return orgContainer;
     	
     	//List<Object> lists = new ArrayList<Object>(freqsList.getSelectedRows());
     	//List<Freq> object = new ArrayList<Freq>();
     	//lists = (List) object;
     	//return (List<T>) lists;
     }
+    
+    // Iterate over the item identifiers of the table.
+    /*for (Iterator i = table.getItemIds().iterator(); i.hasNext();) {
+        // Get the current item identifier, which is an integer.
+        int iid = (Integer) i.next();
+
+        // Now get the actual item from the table.
+        Item item = table.getItem(iid);
+
+        // And now we can get to the actual checkbox object.
+        Button button = (Button)
+                (item.getItemProperty("ismember").getValue());
+
+        // If the checkbox is selected.
+        if ((Boolean)button.getValue() == true) {
+            // Do something with the selected item; collect the
+            // first names in a string.
+            items += item.getItemProperty("First Name")
+                         .getValue() + " ";
+        }
+    }*/
+    
 
 }

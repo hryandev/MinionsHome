@@ -1,6 +1,7 @@
-package com.rex.core;
+package com.rex.core.views;
 
 import com.rex.backend.entity.Job;
+import com.rex.core.ReportEngineUI;
 import com.rex.core.forms.JobForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
@@ -102,13 +103,13 @@ public class JobView extends HorizontalLayout implements View{
 		panelCaption.addComponent(new Label("Test Panel Caption"));
 		panelCaption.addComponent(new Button("Button1"));*/
 		
-		rightPanel.setWidth("700px");
+		rightPanel.setWidth("100%");
 		rightPanel.setContent(jobForm);
 		rightPanel.setVisible(false);
 		
 		HorizontalSplitPanel sp = new HorizontalSplitPanel(left, rightPanel);
 		sp.setSizeFull();
-		sp.setSplitPosition(50);
+		sp.setSplitPosition(25);
 		
 		//HorizontalLayout mainLayout = new HorizontalLayout(left, right);
 		//mainLayout.setSizeFull();
