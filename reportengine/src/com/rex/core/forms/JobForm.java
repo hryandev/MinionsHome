@@ -55,7 +55,6 @@ public class JobForm extends FormLayout {
 
     // Easily bind forms to beans and manage validation and buffering
     private BeanFieldGroup<Job> formFieldBindings;
-    //private JPAContainer<Freq> freqs;
 
     public JobForm(JobView jobView) {
     	this.jobView = jobView;
@@ -82,26 +81,22 @@ public class JobForm extends FormLayout {
         HorizontalLayout actions = new HorizontalLayout(save, cancel);
         actions.setSpacing(true);
         
-        VerticalLayout tableArea = new VerticalLayout();
+        /*VerticalLayout tableArea = new VerticalLayout();
         HorizontalLayout toolbar = new HorizontalLayout();
         Button newButton = new Button("Add");
         Button delButton = new Button("Delete");
         toolbar.addComponent(newButton);
-        toolbar.addComponent(delButton);
+        toolbar.addComponent(delButton);*/
         
         //newButton.addClickListener(e -> openFreqsWindow());
         //delButton.addClickListener(e -> freqs.removeItem(freqTable.getValue()));
         
-        tableArea.addComponent(toolbar);
-        tableArea.addComponent(freqTable);
+        //tableArea.addComponent(toolbar);
+        //tableArea.addComponent(freqTable);
         
 		addComponents(actions, jobName, jobDesc, jobMacro, jobFlag, freqTable);
 		
-		
-		//setComponentAlignment(freqTable, Alignment.BOTTOM_LEFT);
-		
 		setSizeFull();
-		//setMargin(true);
 		setSpacing(true);
 		
     }
@@ -114,17 +109,11 @@ public class JobForm extends FormLayout {
         		jobView.getJob().addEntity(job);
         		jobView.getJob().commit();
         		saveFreqs();
-        		
         	}
         	else{
         		binder.commit();
         	}
             
-            // Save DAO to backend with direct synchronous service API
-            //getUI().service.save(contact);
-            //jobView.service.save(_job);
-            //jobView.getJob().addEntity(job);
-
             String msg = String.format("Saved '%s %s'.",
             		jobName.getValue(),
             		jobMacro.getValue());
@@ -140,7 +129,6 @@ public class JobForm extends FormLayout {
         // Place to call business logic.
         Notification.show("Cancelled", Type.TRAY_NOTIFICATION);
         
-        //jobView.jobList.select(null);
         jobView.getJobList().select(null);
         jobView.getJobPanel().setVisible(false);
     }
@@ -164,7 +152,6 @@ public class JobForm extends FormLayout {
             jobName.focus();
         }
         setVisible(job != null);
-        //jobView.getJobPanel().setVisible(job != null);
     }
     
     public void edit(Object item){
@@ -191,7 +178,6 @@ public class JobForm extends FormLayout {
 		}
 		
 		setVisible(jobItem != null);
-		// jobView.getJobPanel().setVisible(jobItem != null);
     }
     
     public void openFreqsWindow(){
@@ -200,14 +186,6 @@ public class JobForm extends FormLayout {
     	flw.center();
         flw.focus();
     }
-    
-    /*public void openFreqsWindow(Job job){
-    	
-    	FreqsListWindow flw = new FreqsListWindow(job);
-    	getUI().addWindow(flw);
-    	flw.center();
-        flw.focus();
-    }*/
     
     public IndexedContainer getFreqs(String jobid){
     	IndexedContainer container = new IndexedContainer();
@@ -244,7 +222,7 @@ public class JobForm extends FormLayout {
     	for(int i = 0; i < freqTable.getOrgContainer().size(); i++){
     		Item item = freqTable.getOrgContainer().getItem(i+1);
     		Freq freq = new Freq();
-    		//Property<String> freqID = item.getItemProperty("id");
+    		
     		freq.setId((String)item.getItemProperty("id").getValue());
     		freq.setFreqName((String)item.getItemProperty("freqName").getValue());
     		freq.setFreqDesc((String)item.getItemProperty("freqDesc").getValue());
