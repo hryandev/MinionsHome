@@ -28,6 +28,12 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
+
+/**
+ * 
+ * @author Ryan Hsu
+ */
+
 @Theme("valo")
 public class JobForm extends FormLayout {
 	private static final long serialVersionUID = -9095274908375460436L;
@@ -59,6 +65,10 @@ public class JobForm extends FormLayout {
 
     private void configureComponents() {
     	freqTable = new FreqTable();
+    	
+    	jobName.setNullRepresentation("");
+    	jobDesc.setNullRepresentation("");
+    	jobMacro.setNullRepresentation("");
     	
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
@@ -131,7 +141,7 @@ public class JobForm extends FormLayout {
         Notification.show("Cancelled", Type.TRAY_NOTIFICATION);
         
         //jobView.jobList.select(null);
-        //jobView.getJobList().select(null);
+        jobView.getJobList().select(null);
         jobView.getJobPanel().setVisible(false);
     }
 
@@ -160,22 +170,26 @@ public class JobForm extends FormLayout {
     public void edit(Object item){
 		jobView.getJobPanel().setVisible(true);
 		Item jobItem = jobView.getJob().getItem(item);
-		job = jobView.getJob().getItem(item).getEntity();
-		jobView.getJobPanel().setCaption("Job - " + job.getJobName());
 		
-		freqTable.update(getFreqs(job));
-
-		if (jobItem != null) {
-			// formFieldBindings = BeanFieldGroup.bindFieldsBuffered(job, this);
-			binder = new FieldGroup(jobItem);
-			binder.setBuffered(true);
-
-			binder.bind(jobName, "jobName");
-			binder.bind(jobDesc, "jobDesc");
-			binder.bind(jobMacro, "jobMacro");
-
-			jobName.focus();
+		if(jobItem != null){
+			String jobid = (String)jobItem.getItemProperty("id").getValue();
+			jobView.getJobPanel().setCaption("Job - " + jobItem.getItemProperty("jobName").getValue());
+			
+			freqTable.update(getFreqs(jobid));
+	
+			if (jobItem != null) {
+				// formFieldBindings = BeanFieldGroup.bindFieldsBuffered(job, this);
+				binder = new FieldGroup(jobItem);
+				binder.setBuffered(true);
+	
+				binder.bind(jobName, "jobName");
+				binder.bind(jobDesc, "jobDesc");
+				binder.bind(jobMacro, "jobMacro");
+	
+				jobName.focus();
+			}
 		}
+		
 		setVisible(jobItem != null);
 		// jobView.getJobPanel().setVisible(jobItem != null);
     }
@@ -195,7 +209,7 @@ public class JobForm extends FormLayout {
         flw.focus();
     }*/
     
-    public IndexedContainer getFreqs(Job job){
+    public IndexedContainer getFreqs(String jobid){
     	IndexedContainer container = new IndexedContainer();
     	container.addContainerProperty("id", String.class, null);
     	container.addContainerProperty("freqName", String.class, null);
@@ -206,7 +220,7 @@ public class JobForm extends FormLayout {
 
         JobService jobService = new JobService();
         
-        Job _job = jobService.findJob(job.getId());
+        Job _job = jobService.findJob(jobid);
         
         if(_job != null){
 	        for(int i = 1; i< _job.getFreqs().size()+1; i++){

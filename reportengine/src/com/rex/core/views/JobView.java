@@ -20,6 +20,11 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
+/**
+ * 
+ * @author Ryan Hsu
+ */
+
 @Theme("valo")
 @Title("Job")
 public class JobView extends HorizontalLayout implements View{
@@ -33,15 +38,13 @@ public class JobView extends HorizontalLayout implements View{
     Panel rightPanel;
     
     private JPAContainer<Job> job;
+
     
-    //public JobService service = JobService.createDemoService();
-	
 	public JobView(){
 		jobForm = new JobForm(this);
 		rightPanel = new Panel();
 		job = JPAContainerFactory.make(Job.class,
 	               ReportEngineUI.PERSISTENCE_UNIT);
-		//job = new HierarchicalJobContainer();
 		configureComponents();
 	    buildLayout();
 	}
@@ -55,8 +58,6 @@ public class JobView extends HorizontalLayout implements View{
         */
        newContact.addClickListener(e -> jobForm.add(new Job()));
        
-       //newContact.addClickListener(e -> jobForm.addEntity(new Job()));
-       
        filter.setInputPrompt("Filter jobs...");
        filter.addTextChangeListener(e -> updateFilters(e.getText()));
 
@@ -64,20 +65,13 @@ public class JobView extends HorizontalLayout implements View{
        
        jobList.setContainerDataSource(job);
        
-       //jobList.setColumnOrder("firstName", "lastName", "email");
-       
        jobList.setColumnOrder("jobName", "jobDesc", "jobMacro");
        
        jobList.removeColumn("id");
        jobList.removeColumn("freqs");
-       //jobList.removeColumn("jobQuantum");
-       //jobList.removeColumn("jobFreq");
        
        jobList.setSelectionMode(Grid.SelectionMode.SINGLE);
-       //jobList.addSelectionListener(e
-       //        -> jobForm.edit((job)jobList.getSelectedRow()));
-       jobList.addSelectionListener(e
-               -> jobForm.edit(jobList.getSelectedRow()));
+       jobList.addSelectionListener(e -> jobForm.edit(jobList.getSelectedRow()));
        
        refreshJobs();
 	}
@@ -129,30 +123,14 @@ public class JobView extends HorizontalLayout implements View{
 	
 
 	public void refreshJobs() {
-        //refreshContacts(filter.getValue());
 		updateFilters(filter.getValue());
     }
 
-    /*private void refreshContacts(String stringFilter) {
-        jobList.setContainerDataSource(new BeanItemContainer<>(
-                Contact.class, service.findAll(stringFilter)));
-    	
-        jobForm.setVisible(false);
-    }*/
     
     private void updateFilters(String stringFilter) {
         job.setApplyFiltersImmediately(false);
         job.removeAllContainerFilters();
-        /*if (departmentFilter != null) {
-            // two level hierarchy at max in our demo
-            if (departmentFilter.getParent() == null) {
-                job.addContainerFilter(new Equal("department.parent",
-                        departmentFilter));
-            } else {
-                job.addContainerFilter(new Equal("department",
-                        departmentFilter));
-            }
-        }*/
+        
         if (stringFilter != null && !stringFilter.equals("")) {
             Or or = new Or(new Like("jobName", stringFilter + "%", false),
                     new Like("jobMacro", stringFilter + "%", false));

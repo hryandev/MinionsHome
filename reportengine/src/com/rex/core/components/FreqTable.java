@@ -8,24 +8,16 @@ import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.VerticalLayout;
 
-public class FreqTable extends VerticalLayout{
-	
-	Grid freqList;
-	
-	IndexedContainer container = new IndexedContainer();
-	
-	/*public ValueChangeListener update = new ValueChangeListener() {
+/**
+ * 
+ * @author Ryan Hsu
+ */
 
-		@Override
-		public void valueChange(ValueChangeEvent event) {
-			// TODO Auto-generated method stub
-			if (freqList == null) {
-				freqList = new Grid("Frequency");
-				freqList.setContainerDataSource(container);
-                addComponent(freqList);
-            }
-		}
-	};*/
+public class FreqTable extends VerticalLayout{
+	private static final long serialVersionUID = 7250371074726485829L;
+
+	Grid freqList;
+	IndexedContainer container = new IndexedContainer();
 	
 	public FreqTable(){
 		freqList = new Grid("Frequency");
@@ -35,10 +27,7 @@ public class FreqTable extends VerticalLayout{
 	}
 	
 	public void configure(){
-		
-        
 		freqList.setSelectionMode(SelectionMode.MULTI);
-		
 		freqList.setImmediate(true);
 		
 		for (Column c : freqList.getColumns()) {
@@ -60,19 +49,10 @@ public class FreqTable extends VerticalLayout{
         toolbar.addComponent(newButton);
         toolbar.addComponent(delButton);
         
-        //toolbar.setWidth("100px");
-        //toolbar.setHeight("50px");
-        
-        //freqList.setWidth("200px");
-        //freqList.setHeight("500px");
-        
         addComponent(toolbar);
         addComponent(freqList);
         
-        
         //setExpandRatio(toolbar, 1);
-        
-        //setComponentAlignment(freqList, Alignment.BOTTOM_LEFT);
         
         newButton.addClickListener(e -> openFreqsWindow());
         
@@ -95,12 +75,6 @@ public class FreqTable extends VerticalLayout{
     	getUI().addWindow(flw);
     	flw.center();
         flw.focus();
-        
-        /*FreqsListWindow flw = new FreqsListWindow(job, freqTable);
-    	getUI().addWindow(flw);
-    	flw.center();
-        flw.focus();*/
-        
     }	
 	
 	public void update(IndexedContainer container){
@@ -114,5 +88,18 @@ public class FreqTable extends VerticalLayout{
 		addComponent(freqList);
         
 	}
+	
+	/*public ValueChangeListener update = new ValueChangeListener() {
+
+		@Override
+		public void valueChange(ValueChangeEvent event) {
+			// TODO Auto-generated method stub
+			if (freqList == null) {
+				freqList = new Grid("Frequency");
+				freqList.setContainerDataSource(container);
+	            addComponent(freqList);
+	        }
+		}
+	};*/
 
 }

@@ -12,6 +12,11 @@ import com.rex.backend.entity.Freq;
 import com.rex.backend.entity.Job;
 import com.rex.backend.entity.JobFreq;
 
+/**
+ * 
+ * @author Ryan Hsu
+ */
+
 public class JobService {
 	
 	private EntityManagerFactory emf;
