@@ -1,18 +1,14 @@
 package com.rex.backend.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.eclipse.persistence.annotations.UuidGenerator;
 
 @Entity
@@ -26,7 +22,7 @@ public class Freq {
     private String id;
 	
 	@NotNull
-	@Column(name = "FREQ_NAME")
+	@Column(name = "FREQ_NAME", unique = true)
     private String freqName;
 	
 	@Column(name = "FREQ_DESC")
@@ -58,6 +54,25 @@ public class Freq {
 	public void setFreqDesc(String freqDesc) {
 		this.freqDesc = freqDesc;
 	}
-
-
+	
+	@Override
+    public int hashCode() {
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(freqName);
+        return hcb.toHashCode();
+    }
+	
+	@Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Freq)) {
+            return false;
+        }
+        Freq that = (Freq) obj;
+        EqualsBuilder eb = new EqualsBuilder();
+        eb.append(id, that.id);
+        return eb.isEquals();
+    }
 }

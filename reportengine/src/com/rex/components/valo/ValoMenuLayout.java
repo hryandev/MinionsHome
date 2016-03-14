@@ -42,7 +42,7 @@ public class ValoMenuLayout extends HorizontalLayout {
 
         addComponents(menuArea, contentArea);
         setExpandRatio(menuArea, 1);
-        setExpandRatio(contentArea, 10);
+        setExpandRatio(contentArea, 8);
     }
 
     public ComponentContainer getContentContainer() {

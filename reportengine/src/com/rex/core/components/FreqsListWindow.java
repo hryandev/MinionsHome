@@ -56,7 +56,7 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     			ReportEngineUI.PERSISTENCE_UNIT);
     	
     	this.freqTable = freqTable;
-    	orgContainer = freqTable.getOrgContainer();
+    	orgContainer = freqTable.getRevisedContainer();
     	configureComponents();
         buildLayout();
     }
@@ -114,11 +114,13 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
         cancelButton = new Button("Cancel", this);
         toolbar.addComponent(saveButton);
         toolbar.addComponent(cancelButton);
+        toolbar.setSpacing(true);
     	
         root.addComponents(toolbar, freqsList);
         root.setExpandRatio(freqsList, 1);
+        root.setSpacing(true);
         
-        setSizeUndefined();
+        //setSizeUndefined();
         setContent(root);
         setCaption("Select Frequency");
     }

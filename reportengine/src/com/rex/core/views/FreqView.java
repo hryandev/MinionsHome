@@ -1,8 +1,9 @@
 package com.rex.core.views;
 
+import com.rex.backend.entity.Freq;
 import com.rex.backend.entity.Job;
 import com.rex.core.ReportEngineUI;
-import com.rex.core.forms.JobForm;
+import com.rex.core.forms.FreqForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Theme;
@@ -15,7 +16,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -26,24 +26,24 @@ import com.vaadin.ui.VerticalLayout;
  */
 
 @Theme("valo")
-@Title("Job")
-public class JobView extends HorizontalLayout implements View{
+@Title("Frequency")
+public class FreqView extends HorizontalLayout implements View{
 	private static final long serialVersionUID = -7993072104270238504L;
 	
 	TextField filter = new TextField();
-    public Grid jobList = new Grid();
-    Button newContact = new Button("New job");
+    public Grid freqList = new Grid();
+    Button newContact = new Button("New Freq");
 
-    JobForm jobForm;
+    FreqForm freqForm;
     Panel rightPanel;
     
-    private JPAContainer<Job> job;
+    private JPAContainer<Freq> freq;
 
     
-	public JobView(){
-		jobForm = new JobForm(this);
+	public FreqView(){
+		freqForm = new FreqForm(this);
 		rightPanel = new Panel();
-		job = JPAContainerFactory.make(Job.class,
+		freq = JPAContainerFactory.make(Freq.class,
 	               ReportEngineUI.PERSISTENCE_UNIT);
 		configureComponents();
 	    buildLayout();
@@ -56,23 +56,21 @@ public class JobView extends HorizontalLayout implements View{
         * to synchronously handle those events. Vaadin automatically sends
         * only the needed changes to the web page without loading a new page.
         */
-       newContact.addClickListener(e -> jobForm.add(new Job()));
+       newContact.addClickListener(e -> freqForm.add(new Freq()));
        
-       filter.setInputPrompt("Filter jobs...");
+       filter.setInputPrompt("Filter frequency...");
        filter.addTextChangeListener(e -> updateFilters(e.getText()));
 
        //jobList.setContainerDataSource(new BeanItemContainer<>(Contact.class));
        
-       jobList.setContainerDataSource(job);
+       freqList.setContainerDataSource(freq);
        
-       jobList.setColumnOrder("jobName", "jobDesc", "activate");
+       freqList.setColumnOrder("freqName", "freqDesc");
        
-       jobList.removeColumn("id");
-       jobList.removeColumn("freqs");
-       jobList.removeColumn("jobMacro");
+       freqList.removeColumn("id");
        
-       jobList.setSelectionMode(Grid.SelectionMode.SINGLE);
-       jobList.addSelectionListener(e -> jobForm.edit(jobList.getSelectedRow()));
+       freqList.setSelectionMode(Grid.SelectionMode.SINGLE);
+       freqList.addSelectionListener(e -> freqForm.edit(freqList.getSelectedRow()));
        
        refreshJobs();
 	}
@@ -83,13 +81,13 @@ public class JobView extends HorizontalLayout implements View{
 		filter.setWidth("100%");
 		actions.setExpandRatio(filter, 1);
 
-		VerticalLayout left = new VerticalLayout(actions, jobList);
+		VerticalLayout left = new VerticalLayout(actions, freqList);
 		left.setSizeFull();
-		jobList.setSizeFull();
-		left.setExpandRatio(jobList, 1);
+		freqList.setSizeFull();
+		left.setExpandRatio(freqList, 1);
 		
 		VerticalLayout right = new VerticalLayout();
-		right.addComponent(jobForm);
+		right.addComponent(freqForm);
 		right.setSizeFull();
 		
 		/*HorizontalLayout panelCaption = new HorizontalLayout();
@@ -99,7 +97,7 @@ public class JobView extends HorizontalLayout implements View{
 		panelCaption.addComponent(new Button("Button1"));*/
 		
 		rightPanel.setWidth("100%");
-		rightPanel.setContent(jobForm);
+		rightPanel.setContent(freqForm);
 		rightPanel.setVisible(false);
 		
 		HorizontalSplitPanel sp = new HorizontalSplitPanel(left, rightPanel);
@@ -129,30 +127,30 @@ public class JobView extends HorizontalLayout implements View{
 
     
     private void updateFilters(String stringFilter) {
-        job.setApplyFiltersImmediately(false);
-        job.removeAllContainerFilters();
+        freq.setApplyFiltersImmediately(false);
+        freq.removeAllContainerFilters();
         
         if (stringFilter != null && !stringFilter.equals("")) {
-            Or or = new Or(new Like("jobName", stringFilter + "%", false),
-                    new Like("jobMacro", stringFilter + "%", false));
-            job.addContainerFilter(or);
+            Or or = new Or(new Like("freqName", stringFilter + "%", false),
+                    new Like("freqDesc", stringFilter + "%", false));
+            freq.addContainerFilter(or);
         }
-        job.applyFilters();
+        freq.applyFilters();
         
-        jobForm.setVisible(false);
+        freqForm.setVisible(false);
         rightPanel.setVisible(false);
     }
     
-    public JPAContainer<Job> getJob(){
-    	return job;
+    public JPAContainer<Freq> getFreq(){
+    	return freq;
     }
     
     public Panel getJobPanel(){
     	return rightPanel;
     }
     
-    public Grid getJobList(){
-    	return jobList;
+    public Grid getFreqList(){
+    	return freqList;
     }
 
 	@Override

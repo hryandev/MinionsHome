@@ -3,18 +3,21 @@ package com.rex.backend.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.eclipse.persistence.annotations.ConversionValue;
+import org.eclipse.persistence.annotations.Convert;
+import org.eclipse.persistence.annotations.ObjectTypeConverter;
 
 @Entity
 public class Job {
@@ -34,18 +37,26 @@ public class Job {
 	@Column(name = "JOB_MACRO")
     private String jobMacro;
 	
+	@ObjectTypeConverter(name = "stringToBooleanConverter", dataType = java.lang.String.class, objectType = java.lang.Boolean.class, defaultObjectValue = "false", conversionValues = {
+			@ConversionValue(dataValue = "F", objectValue = "false"),
+			@ConversionValue(dataValue = "T", objectValue = "true") 
+	})
+	
 	@ManyToMany()
     @JoinTable(name = "JOBFREQ",joinColumns = @JoinColumn(name = "JOB_ID"),inverseJoinColumns = @JoinColumn(name = "FREQ_ID"))
-    private List<Freq> freqs;
+    private List<Freq> freqs = new ArrayList<>();
 	
 	//@OneToMany(mappedBy="job",cascade=CascadeType.ALL, fetch=FetchType.LAZY)
 	//private List<JobFreq> jfRelation = new ArrayList<>();
-
+	
+	@Convert("stringToBooleanConverter")
+	@Column(name = "JOB_ACTIVATE")
+    private Object activate;
 	
 	public Job(){
 		
 	}
-	
+
 	public Job(String id , String name, String macro){
 		this.id = id;
 		jobName = name;
@@ -97,5 +108,34 @@ public class Job {
 	          getFreqs().add(freq);
 	      }
 	}
+	
+	public Object getActivate() {
+		return activate;
+	}
+
+	public void setActivate(Object activate) {
+		this.activate = activate;
+	}
+	
+	@Override
+    public int hashCode() {
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(jobName);
+        return hcb.toHashCode();
+    }
+	
+	@Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Job)) {
+            return false;
+        }
+        Job that = (Job) obj;
+        EqualsBuilder eb = new EqualsBuilder();
+        eb.append(id, that.id);
+        return eb.isEquals();
+    }
 	
 }

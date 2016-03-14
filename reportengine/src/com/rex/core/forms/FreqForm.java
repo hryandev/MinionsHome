@@ -1,31 +1,32 @@
 package com.rex.core.forms;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.rex.backend.entity.Freq;
 import com.rex.backend.entity.Job;
 import com.rex.backend.service.JobService;
+import com.rex.core.ReportEngineUI;
 import com.rex.core.components.FreqTable;
 import com.rex.core.components.FreqsListWindow;
+import com.rex.core.views.FreqView;
 import com.rex.core.views.JobView;
 import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
 import com.vaadin.data.Item;
-import com.vaadin.data.Property;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.event.ShortcutAction;
-import com.vaadin.ui.Alignment;
+import com.vaadin.server.ThemeResource;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 
@@ -35,32 +36,36 @@ import com.vaadin.ui.themes.ValoTheme;
  */
 
 @Theme("valo")
-public class JobForm extends FormLayout {
+public class FreqForm extends FormLayout {
 	private static final long serialVersionUID = -9095274908375460436L;
 	
 	Button save = new Button("Save", this::save);
     Button cancel = new Button("Cancel", this::cancel);
-    TextField jobName = new TextField("Job Name");
-    TextField jobDesc = new TextField("Job Description");
-    TextField jobMacro = new TextField("Job Macro");
+    TextField freqName = new TextField("Name");
+    TextField freqDesc = new TextField("Description");
+    ComboBox freqType = new ComboBox("Type");
+    
+    TextField freqMacro = new TextField("Description");
     CheckBox activate = new CheckBox("Activate");
+    
+    private static LinkedHashMap<String, String> types = new LinkedHashMap<String, String>();
     
     public FreqTable freqTable;
     public List<Freq> orgFreqs = new ArrayList<>();
     List<Freq> delList = null;
 	List<Freq> addList = null;
     
-    private Job job;
-    private JobView jobView;
+    private Freq freq;
+    private FreqView freqView;
     private boolean addFlag = false;
     
     FieldGroup binder;
 
     // Easily bind forms to beans and manage validation and buffering
-    private BeanFieldGroup<Job> formFieldBindings;
+    private BeanFieldGroup<Freq> formFieldBindings;
 
-    public JobForm(JobView jobView) {
-    	this.jobView = jobView;
+    public FreqForm(FreqView freqView) {
+    	this.freqView = freqView;
         configureComponents();
         buildLayout();
     }
@@ -68,9 +73,22 @@ public class JobForm extends FormLayout {
     private void configureComponents() {
     	freqTable = new FreqTable();
     	
-    	jobName.setNullRepresentation("");
-    	jobDesc.setNullRepresentation("");
-    	jobMacro.setNullRepresentation("");
+    	freqName.setNullRepresentation("");
+    	freqDesc.setNullRepresentation("");
+    	freqMacro.setNullRepresentation("");
+    	
+    	initFreqTypes();
+    	//freqType.setContainerDataSource();
+    	freqType.setNullSelectionAllowed(false);
+    	
+    	freqType.setItemCaptionPropertyId("caption");
+    	freqType.addContainerProperty("caption", String.class, "");
+    	for (final String identifier : types.keySet()) {
+    		freqType.addItem(identifier).getItemProperty("caption")
+            .setValue(types.get(identifier));
+    	}
+    	
+    	freqType.select("s");
     	
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
@@ -97,7 +115,7 @@ public class JobForm extends FormLayout {
         //tableArea.addComponent(toolbar);
         //tableArea.addComponent(freqTable);
         
-		addComponents(actions, jobName, jobDesc, jobMacro, activate, freqTable);
+		addComponents(actions, freqName, freqDesc, freqType);
 		
 		setSizeFull();
 		setSpacing(true);
@@ -109,8 +127,8 @@ public class JobForm extends FormLayout {
             // Commit the fields from UI to DAO
         	if(addFlag){
         		formFieldBindings.commit();
-        		jobView.getJob().addEntity(job);
-        		jobView.getJob().commit();
+        		freqView.getFreq().addEntity(freq);
+        		freqView.getFreq().commit();
         	}
         	else{
         		
@@ -120,10 +138,10 @@ public class JobForm extends FormLayout {
         	saveFreqs();
             
             String msg = String.format("Saved '%s %s'.",
-            		jobName.getValue(),
-            		jobMacro.getValue());
+            		freqName.getValue(),
+            		freqMacro.getValue());
             Notification.show(msg,Type.TRAY_NOTIFICATION);
-            jobView.refreshJobs();
+            freqView.refreshJobs();
             addFlag = false;
         } catch (FieldGroup.CommitException e) {
             // Validation exceptions could be shown here
@@ -134,14 +152,14 @@ public class JobForm extends FormLayout {
         // Place to call business logic.
         Notification.show("Cancelled", Type.TRAY_NOTIFICATION);
         
-        jobView.getJobList().select(null);
-        jobView.getJobPanel().setVisible(false);
+        freqView.getFreqList().select(null);
+        freqView.getJobPanel().setVisible(false);
     }
 
-    public void add(Job job) {
-    	jobView.getJobPanel().setVisible(true);
-    	jobView.getJobPanel().setCaption("New Job");
-        this.job = job;
+    public void add(Freq freq) {
+    	freqView.getJobPanel().setVisible(true);
+    	freqView.getJobPanel().setCaption("New Freq");
+        this.freq = freq;
         addFlag = true;
         
         IndexedContainer container = new IndexedContainer();
@@ -151,50 +169,48 @@ public class JobForm extends FormLayout {
         
         freqTable.update(container);
     	
-        if(job != null) {
+        if(freq != null) {
             // Bind the properties of the contact POJO to fiels in this form
-            formFieldBindings = BeanFieldGroup.bindFieldsBuffered(job, this);
-            jobName.focus();
+            formFieldBindings = BeanFieldGroup.bindFieldsBuffered(freq, this);
+            freqName.focus();
         }
-        setVisible(job != null);
+        setVisible(freq != null);
     }
     
     public void edit(Object item){
-		jobView.getJobPanel().setVisible(true);
-		Item jobItem = jobView.getJob().getItem(item);
+		freqView.getJobPanel().setVisible(true);
+		Item freqItem = freqView.getFreq().getItem(item);
 		
-		if(jobItem != null){
-			String jobid = (String)jobItem.getItemProperty("id").getValue();
-			job = jobView.getJob().getItem(item).getEntity();
-			jobView.getJobPanel().setCaption("Job - " + jobItem.getItemProperty("jobName").getValue());
-			freqTable.setOrgContainer(getFreqs(jobid));
-			freqTable.update(getFreqs(jobid));
+		if(freqItem != null){
+			String freqid = (String)freqItem.getItemProperty("id").getValue();
+			freq = freqView.getFreq().getItem(item).getEntity();
+			freqView.getJobPanel().setCaption("Freq - " + freqItem.getItemProperty("freqName").getValue());
+			freqTable.setOrgContainer(getFreqs(freqid));
+			freqTable.update(getFreqs(freqid));
 	
-			if (jobItem != null) {
+			if (freqItem != null) {
 				// formFieldBindings = BeanFieldGroup.bindFieldsBuffered(job, this);
-				binder = new FieldGroup(jobItem);
+				binder = new FieldGroup(freqItem);
 				binder.setBuffered(true);
 	
-				binder.bind(jobName, "jobName");
-				binder.bind(jobDesc, "jobDesc");
-				binder.bind(jobMacro, "jobMacro");
-				binder.bind(activate, "activate");
+				binder.bind(freqName, "freqName");
+				binder.bind(freqDesc, "freqDesc");
 	
-				jobName.focus();
+				freqName.focus();
 			}
 		}
 		
-		setVisible(jobItem != null);
+		setVisible(freqItem != null);
     }
     
-    public void openFreqsWindow(){
+    /*public void openFreqsWindow(){
     	FreqsListWindow flw = new FreqsListWindow(job, freqTable);
     	getUI().addWindow(flw);
     	flw.center();
         flw.focus();
-    }
+    }*/
     
-    public IndexedContainer getFreqs(String jobid){
+    public IndexedContainer getFreqs(String freqid){
     	IndexedContainer container = new IndexedContainer();
     	container.addContainerProperty("id", String.class, null);
     	container.addContainerProperty("freqName", String.class, null);
@@ -205,24 +221,24 @@ public class JobForm extends FormLayout {
 
         JobService jobService = new JobService();
         
-        Job _job = jobService.findJob(jobid);
+        /*Freq _freq = jobService.findJob(freqid);
         
-        if(_job != null){
-        	orgFreqs = _job.getFreqs();
+        if(_freq != null){
+        	orgFreqs = _freq.getFreqs();
         	
-	        for(int i = 1; i< _job.getFreqs().size()+1; i++){
+	        for(int i = 1; i< _freq.getFreqs().size()+1; i++){
 	        	Item item = container.addItem(i);
-	        	item.getItemProperty("id").setValue(_job.getFreqs().get(i-1).getId());
-	        	item.getItemProperty("freqName").setValue(_job.getFreqs().get(i-1).getFreqName());
-	        	item.getItemProperty("freqDesc").setValue(_job.getFreqs().get(i-1).getFreqDesc());
+	        	item.getItemProperty("id").setValue(_freq.getFreqs().get(i-1).getId());
+	        	item.getItemProperty("freqName").setValue(_freq.getFreqs().get(i-1).getFreqName());
+	        	item.getItemProperty("freqDesc").setValue(_freq.getFreqs().get(i-1).getFreqDesc());
 	        }
-        }
+        }*/
         
         return container;
     }
     
-    public Job getJob(){
-    	return job;
+    public Freq getFreq(){
+    	return freq;
     }
     
     public void saveFreqs(){
@@ -231,7 +247,7 @@ public class JobForm extends FormLayout {
     	JobService jobService = new JobService();
         
     	if(addFlag){
-    		jobService.addFreqs(job.getId(), fList);
+    		jobService.addFreqs(freq.getId(), fList);
     	}else{
     		addList = new ArrayList<Freq>();
     		delList = new ArrayList<Freq>();
@@ -249,11 +265,11 @@ public class JobForm extends FormLayout {
         	}
         	
         	if(delList != null){
-        		jobService.removeFreqs(job.getId(), delList);
+        		jobService.removeFreqs(freq.getId(), delList);
         	}
         	
         	if(addList != null){
-        		jobService.addFreqs(job.getId(), addList);
+        		jobService.addFreqs(freq.getId(), addList);
         	}
     	}
     }
@@ -274,7 +290,16 @@ public class JobForm extends FormLayout {
     	
     	return fList;
     	
-    	
+    }
+    
+    public void initFreqTypes(){
+    	types.put("s", "Every Second");
+    	types.put("m", "Every Minute");
+    	types.put("h", "Every Hour");
+    	types.put("D", "Daily");
+    	types.put("W", "Weekly");
+    	types.put("M", "Monthly");
+    	types.put("S", "Specific day");
     }
 
 }

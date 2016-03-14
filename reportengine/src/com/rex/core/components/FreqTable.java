@@ -1,5 +1,8 @@
 package com.rex.core.components;
 
+import java.util.Collection;
+
+import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
@@ -17,7 +20,8 @@ public class FreqTable extends VerticalLayout{
 	private static final long serialVersionUID = 7250371074726485829L;
 
 	Grid freqList;
-	IndexedContainer container = new IndexedContainer();
+	IndexedContainer revised_container = new IndexedContainer();
+	public IndexedContainer org_container = new IndexedContainer();
 	
 	public FreqTable(){
 		freqList = new Grid("Frequency");
@@ -55,6 +59,7 @@ public class FreqTable extends VerticalLayout{
         //setExpandRatio(toolbar, 1);
         
         newButton.addClickListener(e -> openFreqsWindow());
+        delButton.addClickListener(e -> removeSelectedFreq(freqList.getSelectedRows()));
         
         setSizeFull();
 		
@@ -67,7 +72,16 @@ public class FreqTable extends VerticalLayout{
 	}
 	
 	public IndexedContainer getOrgContainer(){
-		return container;
+		return org_container;
+	}
+	
+	public void setOrgContainer(IndexedContainer container){
+		org_container = container;
+	}
+	
+	
+	public IndexedContainer getRevisedContainer(){
+		return revised_container;
 	}
 		
 	public void openFreqsWindow(){
@@ -75,10 +89,23 @@ public class FreqTable extends VerticalLayout{
     	getUI().addWindow(flw);
     	flw.center();
         flw.focus();
-    }	
+    }
+	
+	public void removeSelectedFreq(Collection<Object> oList){
+		
+		for(Object o : oList){
+			Item item = org_container.getItem(o);
+			if(item != null){
+				revised_container.removeItem(o);
+			}
+		}
+		
+		update(revised_container);
+		
+	}
 	
 	public void update(IndexedContainer container){
-		this.container = container;
+		this.revised_container = container;
 		
 		removeComponent(freqList);
 		freqList = new Grid("Frequency");

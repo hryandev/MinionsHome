@@ -51,22 +51,27 @@ public class JobService {
 	}
 	
 	public Job findJob(String id) {
+		//em.getTransaction().begin();
+		//Job job = em.find(Job.class, id);
+		//em.getTransaction().commit();
+		
 		return em.find(Job.class, id);
 	}
 	
-	public void updateFreqs(String id, List<Freq> freqs){
+	public void addFreqs(String id, List<Freq> freqs){
 		Job job = findJob(id);
 		
 		try{
 			em.getTransaction().begin();
 			
-			job.setFreqs(freqs);
+			job.getFreqs().addAll(freqs);
+			
+			//job.setFreqs(freqs);
 			em.persist(job);
 			em.getTransaction().commit();
 			
 	    }finally{
-	        em.close();
-	        emf.close();
+	    	
 	    }
 		
 	}
@@ -74,5 +79,20 @@ public class JobService {
 	public List<Job> findAllJob() {
 		TypedQuery<Job> query = em.createQuery("SELECT * FROM Job", Job.class);
 		return query.getResultList();
+	}
+	
+	public void removeFreqs(String id, List<Freq> freqs){
+		Job job = findJob(id);
+		
+		try{
+			em.getTransaction().begin();
+			
+			job.getFreqs().removeAll(freqs);
+			
+			em.persist(job);
+			em.getTransaction().commit();
+			
+	    }finally{
+	    }
 	}
 }
