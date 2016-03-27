@@ -1,6 +1,7 @@
 package com.rex.core.forms;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.rex.backend.entity.Freq;
@@ -10,14 +11,11 @@ import com.rex.core.components.FreqTable;
 import com.rex.core.components.FreqsListWindow;
 import com.rex.core.views.JobView;
 import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
 import com.vaadin.data.Item;
-import com.vaadin.data.Property;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.event.ShortcutAction;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.FormLayout;
@@ -25,7 +23,6 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 
@@ -109,6 +106,7 @@ public class JobForm extends FormLayout {
             // Commit the fields from UI to DAO
         	if(addFlag){
         		formFieldBindings.commit();
+        		
         		jobView.getJob().addEntity(job);
         		jobView.getJob().commit();
         	}
@@ -125,6 +123,9 @@ public class JobForm extends FormLayout {
             Notification.show(msg,Type.TRAY_NOTIFICATION);
             jobView.refreshJobs();
             addFlag = false;
+            jobView.getJobList().select(null);
+            jobView.getJobPanel().setVisible(false);
+            
         } catch (FieldGroup.CommitException e) {
             // Validation exceptions could be shown here
         }
@@ -136,6 +137,8 @@ public class JobForm extends FormLayout {
         
         jobView.getJobList().select(null);
         jobView.getJobPanel().setVisible(false);
+        
+        addFlag = false;
     }
 
     public void add(Job job) {
@@ -143,6 +146,7 @@ public class JobForm extends FormLayout {
     	jobView.getJobPanel().setCaption("New Job");
         this.job = job;
         addFlag = true;
+        
         
         IndexedContainer container = new IndexedContainer();
         container.addContainerProperty("id", String.class, null);
@@ -154,6 +158,9 @@ public class JobForm extends FormLayout {
         if(job != null) {
             // Bind the properties of the contact POJO to fiels in this form
             formFieldBindings = BeanFieldGroup.bindFieldsBuffered(job, this);
+            job.setFlag("N");
+            job.setJobQtm(120);
+            
             jobName.focus();
         }
         setVisible(job != null);
@@ -258,7 +265,7 @@ public class JobForm extends FormLayout {
     	}
     }
     
-    public List<Freq> getRevisedFreqList(){
+    public List<Freq> getRevisedListAdd(){
     	List<Freq> fList = new ArrayList<>();
     	
     	for(int i = 0; i < freqTable.getRevisedContainer().size(); i++){
@@ -273,7 +280,25 @@ public class JobForm extends FormLayout {
     	}
     	
     	return fList;
+    }
+    
+    public List<Freq> getRevisedFreqList(){
+    	List<Freq> fList = new ArrayList<>();
     	
+    	Collection<Integer> tempList = (Collection<Integer>) freqTable.getRevisedContainer().getItemIds();
+    	
+    	for(Integer j : tempList){
+    		Item item = freqTable.getRevisedContainer().getItem(j);
+    		Freq freq = new Freq();
+    		
+    		freq.setId((String)item.getItemProperty("id").getValue());
+    		freq.setFreqName((String)item.getItemProperty("freqName").getValue());
+    		freq.setFreqDesc((String)item.getItemProperty("freqDesc").getValue());
+    		
+    		fList.add(freq);
+    	}
+    	
+    	return fList;
     	
     }
 

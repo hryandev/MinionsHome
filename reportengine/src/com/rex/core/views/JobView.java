@@ -1,6 +1,10 @@
 package com.rex.core.views;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
+
 import com.rex.backend.entity.Job;
+import com.rex.backend.entity.Task;
 import com.rex.core.ReportEngineUI;
 import com.rex.core.forms.JobForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
@@ -15,7 +19,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -38,13 +41,15 @@ public class JobView extends HorizontalLayout implements View{
     Panel rightPanel;
     
     private JPAContainer<Job> job;
-
     
 	public JobView(){
 		jobForm = new JobForm(this);
 		rightPanel = new Panel();
+		//EntityManager em = Persistence.createEntityManagerFactory("reportengine").createEntityManager();
+    	//em.getEntityManagerFactory().getCache().evict(Job.class);
 		job = JPAContainerFactory.make(Job.class,
 	               ReportEngineUI.PERSISTENCE_UNIT);
+		
 		configureComponents();
 	    buildLayout();
 	}
@@ -67,14 +72,19 @@ public class JobView extends HorizontalLayout implements View{
        
        jobList.setColumnOrder("jobName", "jobDesc", "activate");
        
+       jobList.setImmediate(true);
+       
        jobList.removeColumn("id");
        jobList.removeColumn("freqs");
        jobList.removeColumn("jobMacro");
+       jobList.removeColumn("flag");
+       jobList.removeColumn("jobQtm");
        
        jobList.setSelectionMode(Grid.SelectionMode.SINGLE);
        jobList.addSelectionListener(e -> jobForm.edit(jobList.getSelectedRow()));
        
        refreshJobs();
+       
 	}
 
 	private void buildLayout() {
@@ -158,10 +168,10 @@ public class JobView extends HorizontalLayout implements View{
 	@Override
 	public void enter(ViewChangeEvent event) {
 		// TODO Auto-generated method stub
-		
+		job.refresh();
+		jobList.select(null);
+		rightPanel.setVisible(false);
 	}
-	
-	
 
 }
 

@@ -1,7 +1,6 @@
 package com.rex.core.views;
 
 import com.rex.backend.entity.Freq;
-import com.rex.backend.entity.Job;
 import com.rex.core.ReportEngineUI;
 import com.rex.core.forms.FreqForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
@@ -32,47 +31,61 @@ public class FreqView extends HorizontalLayout implements View{
 	
 	TextField filter = new TextField();
     public Grid freqList = new Grid();
+    //public Table freqList = new Table();
     Button newContact = new Button("New Freq");
 
     FreqForm freqForm;
     Panel rightPanel;
     
     private JPAContainer<Freq> freq;
-
     
 	public FreqView(){
 		freqForm = new FreqForm(this);
 		rightPanel = new Panel();
 		freq = JPAContainerFactory.make(Freq.class,
 	               ReportEngineUI.PERSISTENCE_UNIT);
+		
 		configureComponents();
 	    buildLayout();
 	}
 	
-	private void configureComponents() {
-        /* Synchronous event handling.
-        *
-        * Receive user interaction events on the server-side. This allows you
-        * to synchronously handle those events. Vaadin automatically sends
-        * only the needed changes to the web page without loading a new page.
-        */
+	private void configureComponents(){
        newContact.addClickListener(e -> freqForm.add(new Freq()));
        
        filter.setInputPrompt("Filter frequency...");
        filter.addTextChangeListener(e -> updateFilters(e.getText()));
-
-       //jobList.setContainerDataSource(new BeanItemContainer<>(Contact.class));
+       
+       /*for(Object o : freq.getItemIds()){
+    	   Item item = freq.getItem(o);
+    	   if(item != null){
+    		   String sTime = (String)item.getItemProperty("startTime").getValue();
+    		   
+    		   if("".equals(sTime) || sTime == null) item.getItemProperty("startTime").setValue("Execute immediately");
+    	   }
+       }*/
+       
        
        freqList.setContainerDataSource(freq);
        
-       freqList.setColumnOrder("freqName", "freqDesc");
+       freqList.setColumnOrder("freqName", "startTime");
+       
+       freqList.setImmediate(true);
        
        freqList.removeColumn("id");
+       freqList.removeColumn("freqDesc");
+       freqList.removeColumn("freqType");
+       
+       
+       freqList.removeColumn("interval");
+       freqList.removeColumn("repeat");
+       freqList.removeColumn("jobList");
+       
        
        freqList.setSelectionMode(Grid.SelectionMode.SINGLE);
        freqList.addSelectionListener(e -> freqForm.edit(freqList.getSelectedRow()));
        
        refreshJobs();
+
 	}
 
 	private void buildLayout() {
@@ -126,13 +139,13 @@ public class FreqView extends HorizontalLayout implements View{
     }
 
     
-    private void updateFilters(String stringFilter) {
+    private void updateFilters(String stringFilter){
         freq.setApplyFiltersImmediately(false);
         freq.removeAllContainerFilters();
         
         if (stringFilter != null && !stringFilter.equals("")) {
             Or or = new Or(new Like("freqName", stringFilter + "%", false),
-                    new Like("freqDesc", stringFilter + "%", false));
+                    new Like("startTime", stringFilter + "%", false));
             freq.addContainerFilter(or);
         }
         freq.applyFilters();
@@ -145,7 +158,7 @@ public class FreqView extends HorizontalLayout implements View{
     	return freq;
     }
     
-    public Panel getJobPanel(){
+    public Panel getFreqPanel(){
     	return rightPanel;
     }
     
@@ -156,10 +169,11 @@ public class FreqView extends HorizontalLayout implements View{
 	@Override
 	public void enter(ViewChangeEvent event) {
 		// TODO Auto-generated method stub
+		freq.refresh();
+		freqList.select(null);
 		
+		rightPanel.setVisible(false);
 	}
-	
-	
 
 }
 

@@ -1,36 +1,62 @@
 package com.rex.backend.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.eclipse.persistence.annotations.UuidGenerator;
+
 
 @Entity
-@Table(name="FREQ")
-@UuidGenerator(name="EMP_ID_GEN")
 public class Freq {
 
 	@Id
-    @GeneratedValue(generator="EMP_ID_GEN")
 	@Column(name = "FREQ_ID")
     private String id;
 	
 	@NotNull
-	@Column(name = "FREQ_NAME", unique = true)
-    private String freqName;
+	@Column(name = "FREQ_NAME")
+    private String freqName = "";
 	
 	@Column(name = "FREQ_DESC")
-    private String freqDesc;
+    private String freqDesc = "";
+	
+	@Column(name = "FREQ_TYPE")
+    private String freqType = "";
+	
+	@Column(name="FREQ_START")
+    //@Temporal(TemporalType.TIMESTAMP)
+    //private java.util.Date startTime;
+	private String startTime;
+	
+	@Column(name = "FREQ_INTVL")
+    private int interval = 1;
+	
+	@Column(name = "FREQ_CNT")
+    private int repeat = 0;
 	
 	//@OneToMany(mappedBy = "freq", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
     //private List<JobFreq> jfRelation = new ArrayList<>();
 
+	@ManyToMany()
+    @JoinTable(name = "JOBFREQ",joinColumns = @JoinColumn(name = "FREQ_ID"),inverseJoinColumns = @JoinColumn(name = "JOB_ID"))
+    private List<Job> jobList = new ArrayList<>();
+	
+	public Freq(){
+		this.id = UUID.randomUUID().toString();
+	}
+	
 	public String getId() {
 		return id;
 	}
@@ -54,6 +80,47 @@ public class Freq {
 	public void setFreqDesc(String freqDesc) {
 		this.freqDesc = freqDesc;
 	}
+	
+	public String getFreqType() {
+		return freqType;
+	}
+
+	public void setFreqType(String freqType) {
+		this.freqType = freqType;
+	}
+
+	public String getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
+	}
+	
+	public int getInterval() {
+		return interval;
+	}
+
+	public void setInterval(int interval) {
+		this.interval = interval;
+	}
+
+	public int getRepeat() {
+		return repeat;
+	}
+
+	public void setRepeat(int repeat) {
+		this.repeat = repeat;
+	}
+	
+	public List<Job> getJobList() {
+		return jobList;
+	}
+
+	public void setJobList(List<Job> jobList) {
+		this.jobList = jobList;
+	}
+	
 	
 	@Override
     public int hashCode() {

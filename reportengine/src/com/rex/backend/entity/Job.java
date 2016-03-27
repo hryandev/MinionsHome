@@ -2,11 +2,11 @@ package com.rex.backend.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -23,24 +23,18 @@ import org.eclipse.persistence.annotations.ObjectTypeConverter;
 public class Job {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "JOB_ID")
-    private String id;
+    private String id = "";
 	
 	@NotNull
 	@Column(name = "JOB_NAME")
-    private String jobName;
+    private String jobName = "";
 	
 	@Column(name = "JOB_DESC")
-    private String jobDesc;
+    private String jobDesc = "";
     
 	@Column(name = "JOB_MACRO")
-    private String jobMacro;
-	
-	@ObjectTypeConverter(name = "stringToBooleanConverter", dataType = java.lang.String.class, objectType = java.lang.Boolean.class, defaultObjectValue = "false", conversionValues = {
-			@ConversionValue(dataValue = "F", objectValue = "false"),
-			@ConversionValue(dataValue = "T", objectValue = "true") 
-	})
+    private String jobMacro = "";
 	
 	@ManyToMany()
     @JoinTable(name = "JOBFREQ",joinColumns = @JoinColumn(name = "JOB_ID"),inverseJoinColumns = @JoinColumn(name = "FREQ_ID"))
@@ -49,12 +43,24 @@ public class Job {
 	//@OneToMany(mappedBy="job",cascade=CascadeType.ALL, fetch=FetchType.LAZY)
 	//private List<JobFreq> jfRelation = new ArrayList<>();
 	
+	@ObjectTypeConverter(name = "stringToBooleanConverter", dataType = java.lang.String.class, objectType = java.lang.Boolean.class, defaultObjectValue = "false", conversionValues = {
+			@ConversionValue(dataValue = "F", objectValue = "false"),
+			@ConversionValue(dataValue = "T", objectValue = "true") 
+	})
+	
 	@Convert("stringToBooleanConverter")
-	@Column(name = "JOB_ACTIVATE")
+	@Column(name = "JOB_ACTIV")
     private Object activate;
 	
+	@Column(name = "JOB_FLAG")
+    private String flag;
+
+	@Column(name = "JOB_QTM")
+    private int jobQtm;
+
+	
 	public Job(){
-		
+		this.id = UUID.randomUUID().toString();
 	}
 
 	public Job(String id , String name, String macro){
@@ -116,7 +122,24 @@ public class Job {
 	public void setActivate(Object activate) {
 		this.activate = activate;
 	}
+
+	public String getFlag() {
+		return flag;
+	}
+
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
 	
+	
+	public int getJobQtm() {
+		return jobQtm;
+	}
+
+	public void setJobQtm(int jobQtm) {
+		this.jobQtm = jobQtm;
+	}
+
 	@Override
     public int hashCode() {
         HashCodeBuilder hcb = new HashCodeBuilder();

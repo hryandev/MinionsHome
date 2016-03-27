@@ -1,31 +1,43 @@
 package com.rex.core.forms;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
+
 import com.rex.backend.entity.Freq;
 import com.rex.backend.entity.Job;
-import com.rex.backend.service.JobService;
-import com.rex.core.ReportEngineUI;
-import com.rex.core.components.FreqTable;
-import com.rex.core.components.FreqsListWindow;
+import com.rex.backend.service.FreqService;
+import com.rex.core.components.JobTable;
 import com.rex.core.views.FreqView;
-import com.rex.core.views.JobView;
+import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Theme;
 import com.vaadin.data.Item;
+import com.vaadin.data.Property.ReadOnlyException;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.event.ShortcutAction;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -44,17 +56,24 @@ public class FreqForm extends FormLayout {
     TextField freqName = new TextField("Name");
     TextField freqDesc = new TextField("Description");
     ComboBox freqType = new ComboBox("Type");
+    CheckBox execute = new CheckBox("Execute now");
+    //Component startTimeString;
+    DateField startTime = new DateField();
     
-    TextField freqMacro = new TextField("Description");
-    CheckBox activate = new CheckBox("Activate");
+    OptionGroup executeOption = new OptionGroup("Start Time");
+    ComboBox interval = new ComboBox("Interval");
+    ComboBox repeat = new ComboBox("Repeats");
+    
+    public JobTable jobTable;
     
     private static LinkedHashMap<String, String> types = new LinkedHashMap<String, String>();
     
-    public FreqTable freqTable;
-    public List<Freq> orgFreqs = new ArrayList<>();
-    List<Freq> delList = null;
-	List<Freq> addList = null;
+    public List<Job> orgJobList = new ArrayList<>();
+    List<Job> delList = null;
+	List<Job> addList = null;
     
+	private final String EXECUTE_STR = "EXEC NOW";
+	
     private Freq freq;
     private FreqView freqView;
     private boolean addFlag = false;
@@ -71,81 +90,87 @@ public class FreqForm extends FormLayout {
     }
 
     private void configureComponents() {
-    	freqTable = new FreqTable();
+    	jobTable = new JobTable("Dispatch to Job");
     	
-    	freqName.setNullRepresentation("");
-    	freqDesc.setNullRepresentation("");
-    	freqMacro.setNullRepresentation("");
+    	freqName.setValue("");
+    	freqDesc.setValue("");
     	
     	initFreqTypes();
-    	//freqType.setContainerDataSource();
-    	freqType.setNullSelectionAllowed(false);
+    	initInterval();
+    	initRepeat();
     	
-    	freqType.setItemCaptionPropertyId("caption");
-    	freqType.addContainerProperty("caption", String.class, "");
-    	for (final String identifier : types.keySet()) {
-    		freqType.addItem(identifier).getItemProperty("caption")
-            .setValue(types.get(identifier));
-    	}
+    	//startTime.setEnabled(false);
     	
-    	freqType.select("s");
+    	executeOption.addItem("Execute now");
+    	executeOption.addItem("Specific Time");
+    	executeOption.select("Execute now");
+    	executeOption.setValue("Execute now");
+    	executeOption.addStyleName("horizontal");
+    	executeOption.setMultiSelect(false);
+    	/*executeOption.addValueChangeListener(event -> {
+                if (executeOption.getValue().equals("Specific Time")) startTime.setEnabled(true); 
+                else startTime.setEnabled(false);
+        });*/
+    	
+    	executeOption.addValueChangeListener(event -> {
+            if (executeOption.getValue().equals("Execute now")) {
+            	//startTime = new TextField();
+            	startTime.setVisible(false);
+            } 
+            else{
+            	//startTime = new DateField();
+            	startTime.setVisible(true);
+            	
+            }
+    	});
+    	
+    	executeOption.setImmediate(true);
+    	
+    	//execute.addValueChangeListener(event -> startTime.setEnabled(execute.getValue()));
+    	
+    	configureStartTimeField(startTime);
+    	
+    	//startTime.setValue(new Date());
+    	//startTime.setDateFormat("yyyy/MM/dd hh:mm:ss a");
+    	//startTime.setShowISOWeekNumbers(true);
+    	//date.setLenient(true);
+    	//startTime.setResolution(Resolution.SECOND);
+    	//startTime.setVisible(false);
     	
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
         setVisible(false);
+        
     }
 
     private void buildLayout() {
-        //setSizeUndefined();
         setMargin(true);
 
         HorizontalLayout actions = new HorizontalLayout(save, cancel);
         actions.setSpacing(true);
         
-        /*VerticalLayout tableArea = new VerticalLayout();
-        HorizontalLayout toolbar = new HorizontalLayout();
-        Button newButton = new Button("Add");
-        Button delButton = new Button("Delete");
-        toolbar.addComponent(newButton);
-        toolbar.addComponent(delButton);*/
-        
-        //newButton.addClickListener(e -> openFreqsWindow());
-        //delButton.addClickListener(e -> freqs.removeItem(freqTable.getValue()));
-        
-        //tableArea.addComponent(toolbar);
-        //tableArea.addComponent(freqTable);
-        
-		addComponents(actions, freqName, freqDesc, freqType);
+		addComponents(actions, freqName, freqDesc, freqType, executeOption, startTime, interval, repeat, jobTable);
 		
 		setSizeFull();
 		setSpacing(true);
+		this.setHeight("100%");
 		
     }
 
     public void save(Button.ClickEvent event) {
-        try {
-            // Commit the fields from UI to DAO
-        	if(addFlag){
-        		formFieldBindings.commit();
-        		freqView.getFreq().addEntity(freq);
-        		freqView.getFreq().commit();
-        	}
-        	else{
-        		
-        		binder.commit();
-        	}
-        	
-        	saveFreqs();
-            
-            String msg = String.format("Saved '%s %s'.",
-            		freqName.getValue(),
-            		freqMacro.getValue());
-            Notification.show(msg,Type.TRAY_NOTIFICATION);
-            freqView.refreshJobs();
-            addFlag = false;
-        } catch (FieldGroup.CommitException e) {
-            // Validation exceptions could be shown here
-        }
+        // Commit the fields from UI to DAO
+		saveFreq();
+		saveJobs();
+		
+		String msg = String.format("Saved '%s %s'.",
+				freqName.getValue(),
+				types.get(freqType.getValue()));
+		Notification.show(msg,Type.TRAY_NOTIFICATION);
+		freqView.refreshJobs();
+		addFlag = false;
+		this.freq = null;
+		freqView.getFreqList().select(null);
+        freqView.getFreqPanel().setVisible(false);
     }
 
     public void cancel(Button.ClickEvent event) {
@@ -153,86 +178,109 @@ public class FreqForm extends FormLayout {
         Notification.show("Cancelled", Type.TRAY_NOTIFICATION);
         
         freqView.getFreqList().select(null);
-        freqView.getJobPanel().setVisible(false);
+        freqView.getFreqPanel().setVisible(false);
+        
+        addFlag = false;
+        this.freq = null;
     }
 
     public void add(Freq freq) {
-    	freqView.getJobPanel().setVisible(true);
-    	freqView.getJobPanel().setCaption("New Freq");
+    	freqView.getFreqPanel().setVisible(true);
+    	freqView.getFreqPanel().setCaption("New Freq");
         this.freq = freq;
         addFlag = true;
         
+        executeOption.select("Execute now");
+        executeOption.setValue("Execute now");
+        repeat.setValue(0);
+        
+        this.freq.setFreqType("s");
+        //this.freq.setStartTime(null);
+        
         IndexedContainer container = new IndexedContainer();
         container.addContainerProperty("id", String.class, null);
-    	container.addContainerProperty("freqName", String.class, null);
-        container.addContainerProperty("freqDesc", String.class, null);
-        
-        freqTable.update(container);
+    	container.addContainerProperty("jobName", String.class, null);
+        container.addContainerProperty("jobDesc", String.class, null);
+        jobTable.update(container);
     	
-        if(freq != null) {
+        if(this.freq != null) {
             // Bind the properties of the contact POJO to fiels in this form
-            formFieldBindings = BeanFieldGroup.bindFieldsBuffered(freq, this);
-            freqName.focus();
+        	formFieldBindings = BeanFieldGroup.bindFieldsBuffered(this.freq, this);
+        	
+            //freqName.focus();
         }
-        setVisible(freq != null);
+        setVisible(this.freq != null);
     }
     
     public void edit(Object item){
-		freqView.getJobPanel().setVisible(true);
+		freqView.getFreqPanel().setVisible(true);
 		Item freqItem = freqView.getFreq().getItem(item);
 		
 		if(freqItem != null){
-			String freqid = (String)freqItem.getItemProperty("id").getValue();
-			freq = freqView.getFreq().getItem(item).getEntity();
-			freqView.getJobPanel().setCaption("Freq - " + freqItem.getItemProperty("freqName").getValue());
-			freqTable.setOrgContainer(getFreqs(freqid));
-			freqTable.update(getFreqs(freqid));
-	
-			if (freqItem != null) {
-				// formFieldBindings = BeanFieldGroup.bindFieldsBuffered(job, this);
-				binder = new FieldGroup(freqItem);
-				binder.setBuffered(true);
-	
-				binder.bind(freqName, "freqName");
-				binder.bind(freqDesc, "freqDesc");
-	
-				freqName.focus();
+			String freqid = (String) freqItem.getItemProperty("id").getValue();
+			this.freq = freqView.getFreq().getItem(item).getEntity();
+			freqView.getFreqPanel().setCaption("Freq - " + freqItem.getItemProperty("freqName").getValue());
+			
+			if(!EXECUTE_STR.equals(this.freq.getStartTime())){
+			//if(this.freq.getStartTime() != null){
+				executeOption.setValue("Specific Time");
+				
+				DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+				try {
+					startTime.setValue(df.parse(this.freq.getStartTime()));
+					startTime.setDateFormat("yyyy/MM/dd hh:mm:ss a");
+					//startTime.setValue(null);
+				} catch (ReadOnlyException | ConversionException | ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}else{
+				executeOption.setValue("Execute now");
 			}
+			
+			jobTable.setOrgContainer(getJob(freqid));
+			jobTable.update(getJob(freqid));
+
+			//formFieldBindings = BeanFieldGroup.bindFieldsBuffered(this.freq, this);
+			binder = new FieldGroup(freqItem);
+			binder.setBuffered(true);
+
+			binder.bind(freqName, "freqName");
+			binder.bind(freqDesc, "freqDesc");
+			binder.bind(freqType, "freqType");
+			//binder.bind(startTime, "startTime");
+			binder.bind(interval, "interval");
+			binder.bind(repeat, "repeat");
+
+			freqName.focus();
+			
 		}
 		
 		setVisible(freqItem != null);
     }
     
-    /*public void openFreqsWindow(){
-    	FreqsListWindow flw = new FreqsListWindow(job, freqTable);
-    	getUI().addWindow(flw);
-    	flw.center();
-        flw.focus();
-    }*/
-    
-    public IndexedContainer getFreqs(String freqid){
+    public IndexedContainer getJob(String freqid){
     	IndexedContainer container = new IndexedContainer();
     	container.addContainerProperty("id", String.class, null);
-    	container.addContainerProperty("freqName", String.class, null);
-        container.addContainerProperty("freqDesc", String.class, null);
+    	container.addContainerProperty("jobName", String.class, null);
+        container.addContainerProperty("jobDesc", String.class, null);
         
-        //EntityManagerFactory emf = Persistence.createEntityManagerFactory("reportengine");
-        //EntityManager em = emf.createEntityManager();
+        EntityManager em = Persistence.createEntityManagerFactory("reportengine").createEntityManager();
 
-        JobService jobService = new JobService();
+        FreqService fService = new FreqService(em);
         
-        /*Freq _freq = jobService.findJob(freqid);
+        Freq _freq = fService.findFreq(freqid);
         
         if(_freq != null){
-        	orgFreqs = _freq.getFreqs();
+        	orgJobList = _freq.getJobList();
         	
-	        for(int i = 1; i< _freq.getFreqs().size()+1; i++){
+	        for(int i = 1; i< _freq.getJobList().size()+1; i++){
 	        	Item item = container.addItem(i);
-	        	item.getItemProperty("id").setValue(_freq.getFreqs().get(i-1).getId());
-	        	item.getItemProperty("freqName").setValue(_freq.getFreqs().get(i-1).getFreqName());
-	        	item.getItemProperty("freqDesc").setValue(_freq.getFreqs().get(i-1).getFreqDesc());
+	        	item.getItemProperty("id").setValue(_freq.getJobList().get(i-1).getId());
+	        	item.getItemProperty("jobName").setValue(_freq.getJobList().get(i-1).getJobName());
+	        	item.getItemProperty("jobDesc").setValue(_freq.getJobList().get(i-1).getJobDesc());
 	        }
-        }*/
+        }
         
         return container;
     }
@@ -241,65 +289,168 @@ public class FreqForm extends FormLayout {
     	return freq;
     }
     
-    public void saveFreqs(){
-    	List<Freq> fList = getRevisedFreqList();
+    public void initFreqTypes(){
+    	types.put("s", "Secondly");
+    	types.put("m", "Minutely");
+    	types.put("h", "Hourly");
+    	types.put("D", "Daily");
+    	types.put("W", "Weekly");
+    	types.put("M", "Monthly");
     	
-    	JobService jobService = new JobService();
+    	freqType.setItemCaptionPropertyId("caption");
+    	freqType.addContainerProperty("caption", String.class, "");
+    	freqType.setNullSelectionAllowed(false);
+    	
+    	for (final String identifier : types.keySet()) {
+    		freqType.addItem(identifier).getItemProperty("caption")
+            .setValue(types.get(identifier));
+    	}
+    	
+    	freqType.select("s");
+    }
+    
+    
+    public void initInterval(){
+    	interval.setNullSelectionAllowed(false);
+    	
+    	for(int i = 1; i <= 60; i++){
+    		interval.addItem(i);
+    	}
+    }
+    
+    public void initRepeat(){
+    	repeat.setNullSelectionAllowed(false);
+    	
+    	for(int i = 0; i < 100; i++){
+    		repeat.addItem(i);
+    	}
+    }
+    
+    public void bindField(Freq freq){
+    	freq.setFreqName(freqName.getValue());
+    	freq.setFreqDesc(freqDesc.getValue());
+    	freq.setFreqType(freqType.getValue().toString());
+    	freq.setInterval(Integer.parseInt(interval.getValue().toString()));
+    	freq.setRepeat(Integer.parseInt(repeat.getValue().toString()));
+    }
+    
+    public void saveFreq(){
+    	DateFormat db = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    	Timestamp ts;
+    	
+    	String sTime;
+    	
+    	if (executeOption.getValue().equals("Execute now")) {
+    		sTime = EXECUTE_STR;
+    	}else{
+    		ts = new Timestamp(startTime.getValue().getTime());
+    		sTime = ts.toString();
+    	}
+    	
+    	if(addFlag){
+    		bindField(this.freq);
+    		
+            freq.setStartTime(sTime);
+    		
+    		freqView.getFreq().addEntity(freq);
+    		freqView.getFreq().commit();
+    		
+    	}
+    	else{
+    		updateFreqStartTime(sTime);
+    		
+    		try {
+				binder.commit();
+			} catch (CommitException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    }
+    
+    public void updateFreqStartTime(String sTime){
+    	EntityManager em = JPAContainerFactory.createEntityManagerForPersistenceUnit("reportengine");
+    	FreqService fService = new FreqService(em);
+    	
+        fService.updateFreqStartTime(this.freq.getId(), sTime);
+    }
+    
+    public void saveJobs(){
+    	List<Job> jList = getRevisedJobList();
+    	
+    	EntityManager em = Persistence.createEntityManagerFactory("reportengine").createEntityManager();
+    	
+    	FreqService fService = new FreqService(em);
         
     	if(addFlag){
-    		jobService.addFreqs(freq.getId(), fList);
+    		fService.addJobList(freq.getId(), jList);
     	}else{
-    		addList = new ArrayList<Freq>();
-    		delList = new ArrayList<Freq>();
+    		addList = new ArrayList<Job>();
+    		delList = new ArrayList<Job>();
     		
-    		for(Freq f : orgFreqs){
-    		    if(!fList.contains(f)){
-    		    	delList.add(f);
+    		for(Job j : orgJobList){
+    		    if(!jList.contains(j)){
+    		    	delList.add(j);
     		    }
         	}
         	
-        	for(Freq freq : fList){
-	        	if(!orgFreqs.contains(freq)){
-	        		addList.add(freq);
+        	for(Job j : jList){
+	        	if(!orgJobList.contains(j)){
+	        		addList.add(j);
 	        	}
         	}
         	
         	if(delList != null){
-        		jobService.removeFreqs(freq.getId(), delList);
+        		fService.removeJobList(freq.getId(), delList);
         	}
         	
         	if(addList != null){
-        		jobService.addFreqs(freq.getId(), addList);
+        		fService.addJobList(freq.getId(), addList);
         	}
     	}
     }
     
-    public List<Freq> getRevisedFreqList(){
-    	List<Freq> fList = new ArrayList<>();
+    public List<Job> getRevisedJobListAdd(){
+    	List<Job> fList = new ArrayList<>();
     	
-    	for(int i = 0; i < freqTable.getRevisedContainer().size(); i++){
-    		Item item = freqTable.getRevisedContainer().getItem(i+1);
-    		Freq freq = new Freq();
+    	for(int i = 0; i < jobTable.getRevisedContainer().size(); i++){
+    		Item item = jobTable.getRevisedContainer().getItem(i+1);
+    		Job job = new Job();
     		
-    		freq.setId((String)item.getItemProperty("id").getValue());
-    		freq.setFreqName((String)item.getItemProperty("freqName").getValue());
-    		freq.setFreqDesc((String)item.getItemProperty("freqDesc").getValue());
+    		job.setId((String)item.getItemProperty("id").getValue());
+    		job.setJobName((String)item.getItemProperty("jobName").getValue());
+    		job.setJobDesc((String)item.getItemProperty("jobDesc").getValue());
     		
-    		fList.add(freq);
+    		fList.add(job);
     	}
     	
     	return fList;
-    	
     }
     
-    public void initFreqTypes(){
-    	types.put("s", "Every Second");
-    	types.put("m", "Every Minute");
-    	types.put("h", "Every Hour");
-    	types.put("D", "Daily");
-    	types.put("W", "Weekly");
-    	types.put("M", "Monthly");
-    	types.put("S", "Specific day");
+    public List<Job> getRevisedJobList(){
+    	List<Job> fList = new ArrayList<>();
+    	
+    	Collection<Integer> tempList = (Collection<Integer>) jobTable.getRevisedContainer().getItemIds();
+    	
+    	for(Integer j : tempList){
+    		Item item = jobTable.getRevisedContainer().getItem(j);
+    		Job job = new Job();
+    		
+    		job.setId((String)item.getItemProperty("id").getValue());
+    		job.setJobName((String)item.getItemProperty("jobName").getValue());
+    		job.setJobDesc((String)item.getItemProperty("jobDesc").getValue());
+    		
+    		fList.add(job);
+    	}
+    	
+    	return fList;
     }
-
+    
+    public void configureStartTimeField(DateField startTime){
+        	startTime.setValue(new Date());
+        	startTime.setDateFormat("yyyy/MM/dd hh:mm:ss a");
+        	startTime.setShowISOWeekNumbers(true);
+        	startTime.setResolution(Resolution.SECOND);
+        	startTime.setVisible(false);
+    }
 }

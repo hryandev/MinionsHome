@@ -2,6 +2,7 @@ package com.rex.core.components;
 
 import java.util.Collection;
 
+import com.rex.backend.entity.Freq;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.ui.Button;
@@ -34,12 +35,12 @@ public class FreqTable extends VerticalLayout{
 		freqList.setSelectionMode(SelectionMode.MULTI);
 		freqList.setImmediate(true);
 		
-		for (Column c : freqList.getColumns()) {
-            //if (!c.getPropertyId().equals("icon")) {
+		/*for (Column c : freqList.getColumns()) {
+            if (!c.getPropertyId().equals("icon")) {
                 c.setSortable(true);
-            //}
+            }
             c.setHidable(true);
-        }
+        }*/
 		
 		freqList.setColumnReorderingAllowed(true);
 		freqList.setHeightByRows(6);
@@ -60,6 +61,15 @@ public class FreqTable extends VerticalLayout{
         
         newButton.addClickListener(e -> openFreqsWindow());
         delButton.addClickListener(e -> removeSelectedFreq(freqList.getSelectedRows()));
+        /*delButton.addClickListener(e -> {
+    	    for (Object itemId: freqList.getSelectedRows()){
+    	    	freqList.getContainerDataSource().removeItem(itemId);
+    	    	revised_container.removeItem(itemId);
+    	    }
+
+    	    freqList.getSelectionModel().reset();
+        });*/
+        
         
         setSizeFull();
 		
@@ -92,6 +102,7 @@ public class FreqTable extends VerticalLayout{
     }
 	
 	public void removeSelectedFreq(Collection<Object> oList){
+		//revised_container = org_container;
 		
 		for(Object o : oList){
 			Item item = org_container.getItem(o);
@@ -110,10 +121,26 @@ public class FreqTable extends VerticalLayout{
 		removeComponent(freqList);
 		freqList = new Grid("Frequency");
 		freqList.setContainerDataSource(container);
+		configure();
 		
 		freqList.removeColumn("id");
 		addComponent(freqList);
         
+	}
+	
+	public void deleteSelectedFreq(){
+	
+	    // Delete all selected data items
+	    for (Object itemId: freqList.getSelectedRows())
+	    	freqList.getContainerDataSource().removeItem(itemId);
+
+	    // Otherwise out of sync with container
+	    freqList.getSelectionModel().reset();
+
+	    // Disable after deleting
+	    //e.getButton().setEnabled(false);
+	
+	    //e.getButton().setEnabled(freqList.getSelectedRows().size() > 0);
 	}
 	
 	/*public ValueChangeListener update = new ValueChangeListener() {

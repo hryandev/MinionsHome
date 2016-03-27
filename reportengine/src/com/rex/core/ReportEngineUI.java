@@ -7,16 +7,18 @@ import java.util.Map.Entry;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
-import com.rex.components.valo.ComboBoxes;
 import com.rex.components.valo.CommonParts;
 import com.rex.components.valo.Icons;
 import com.rex.components.valo.StringGenerator;
+import com.rex.components.valo.Tables;
 import com.rex.components.valo.TestIcon;
 import com.rex.components.valo.ValoMenuLayout;
 import com.rex.components.valo.ValoThemeSessionInitListener;
 import com.rex.core.views.FreqView;
 import com.rex.core.views.JobView;
 import com.rex.core.views.MainView;
+import com.rex.core.views.TaskView;
+import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -28,6 +30,7 @@ import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
+import com.vaadin.event.UIEvents;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
@@ -38,6 +41,7 @@ import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ui.Transport;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -63,13 +67,15 @@ import com.vaadin.ui.themes.ValoTheme;
 @SuppressWarnings("serial")
 @Theme("tests-valo")
 @Title("Report EngineXcel")
+@Push(transport = Transport.LONG_POLLING)
 public class ReportEngineUI extends UI {
 	public static final String PERSISTENCE_UNIT = "reportengine";
 	
     private boolean testMode = false;
 
+    
     @WebServlet(value = "/*", asyncSupported = true)
-    @VaadinServletConfiguration(productionMode = false, ui = ReportEngineUI.class)
+    @VaadinServletConfiguration(productionMode = false, ui = ReportEngineUI.class, heartbeatInterval = 30)
     public static class Servlet extends VaadinServlet {
 
         @Override
@@ -77,6 +83,31 @@ public class ReportEngineUI extends UI {
             super.servletInitialized();
             getService().addSessionInitListener(
                     new ValoThemeSessionInitListener());
+        }
+    }
+    
+    class Loader implements Runnable {
+
+        @Override
+        public void run() {
+            // Simulate a heavy database operation
+            try {
+                Thread.sleep(100000);
+            } catch (InterruptedException e) {
+            }
+
+            // Wrap UI updates in access to properly deal with locking
+            access(() -> {
+                	final String f = Page.getCurrent().getUriFragment();
+                    if(f.equals("!task")){
+                    	Page.getCurrent().reload();	
+                    }
+                    
+                    // Stop polling once the update is done
+                    setPollInterval(-1);
+                
+            });
+            
         }
     }
     
@@ -108,8 +139,36 @@ public class ReportEngineUI extends UI {
     private Navigator navigator;
     private final LinkedHashMap<String, String> menuItems = new LinkedHashMap<String, String>();
     
+    private TaskView taskView = new TaskView();
+    
+    private int taskCount = 0;
+    
     @Override
     protected void init(final VaadinRequest request) {
+    	
+    	//this.setPollInterval(20000);
+    	
+    	/*addPollListener(new UIEvents.PollListener() {
+            @Override
+            public void poll(UIEvents.PollEvent event) {
+                //log.debug("Polling");
+            	
+            	Page.getCurrent().reload();
+            	Notification.show("Refreshed");
+            }
+        });*/
+    	
+    	//new Thread(new Loader()).start();
+    	/*access(() -> {
+        	final String f = Page.getCurrent().getUriFragment();
+            if(f.equals("!task")){
+            	Page.getCurrent().reload();	
+            }
+        	
+        	UI.getCurrent().push();
+        
+    	});*/
+    	
         if (request.getParameter("test") != null) {
             testMode = true;
 
@@ -143,14 +202,17 @@ public class ReportEngineUI extends UI {
         root.addMenu(buildMenu());
         addStyleName(ValoTheme.UI_WITH_MENU);
         
+        
+        //getPage().addUriFragmentChangedListener(event -> present(event.getUriFragment()));
+        
         navigator = new Navigator(this, viewDisplay);
 
         navigator.addView("reportlist", MainView.class);
-        navigator.addView("job", JobView.class);
-        //navigator.addView("task", ButtonsAndLinks.class);
-        navigator.addView("frequency", FreqView.class);
+        navigator.addView("job", new JobView());
+        navigator.addView("task", taskView);
+        navigator.addView("frequency", new FreqView());
         //navigator.addView("user", DateFields.class);
-        navigator.addView("kit2", ComboBoxes.class);
+        //navigator.addView("kit2", Forms.class);
         //navigator.addView("checkboxes", CheckBoxes.class);
         //navigator.addView("sliders", Sliders.class);
         //navigator.addView("group", MenuBars.class);
@@ -171,7 +233,7 @@ public class ReportEngineUI extends UI {
             navigator.navigateTo("reportlist");
         }
 
-        navigator.setErrorView(CommonParts.class);
+        navigator.setErrorView(MainView.class);
 
         navigator.addViewChangeListener(new ViewChangeListener() {
 
@@ -202,6 +264,33 @@ public class ReportEngineUI extends UI {
                     }
                 }
                 menu.removeStyleName("valo-menu-visible");
+                
+                
+                final String f = Page.getCurrent().getUriFragment();
+                if(f.equals("!task")){
+                	taskCount = taskView.getTaskCount();
+                	
+                	Button taskBtn = (Button)menuItemsLayout.getComponent(3);
+                	
+                	String caption = "Task <span class=\"valo-menu-badge\">"+taskCount+"</span>";
+                	
+                	taskBtn.setCaption(caption);
+                	
+                	UI.getCurrent().setPollInterval(50000);
+                	UI.getCurrent().addPollListener(new UIEvents.PollListener() {
+                        @Override
+                        public void poll(UIEvents.PollEvent event) {
+                            //log.debug("Polling");
+                        	
+                        	Page.getCurrent().reload();
+                        	
+                        	taskBtn.setCaption(caption);
+                        }
+                    });
+                }else{
+                	UI.getCurrent().setPollInterval(-1);
+                }
+                
             }
         });
 
@@ -331,6 +420,7 @@ public class ReportEngineUI extends UI {
 
         Label label = null;
         int count = -1;
+        taskCount = taskView.getTaskCount();
         for (final Entry<String, String> item : menuItems.entrySet()) {
             if (item.getKey().equals("job")) {
                 label = new Label("Scheduler", ContentMode.HTML);
@@ -364,12 +454,17 @@ public class ReportEngineUI extends UI {
             final Button b = new Button(item.getValue(), new ClickListener() {
                 @Override
                 public void buttonClick(final ClickEvent event) {
+                	
+                	/*if(item.getKey().equals("task")){
+                		Page.getCurrent().reload();
+                	}*/
+                	
                     navigator.navigateTo(item.getKey());
                 }
             });
             if (count == 1) {
                 b.setCaption(b.getCaption()
-                        + " <span class=\"valo-menu-badge\">123</span>");
+                        + " <span class=\"valo-menu-badge\">"+taskCount+"</span>");
             }
             b.setHtmlContentAllowed(true);
             b.setPrimaryStyleName("valo-menu-item");

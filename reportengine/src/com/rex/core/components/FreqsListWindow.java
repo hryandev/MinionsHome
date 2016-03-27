@@ -40,7 +40,7 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     private Button saveButton;
     private Button cancelButton;
     
-    JobForm form;
+    //JobForm form;
 
     
     public FreqsListWindow() {
