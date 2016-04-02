@@ -7,11 +7,12 @@ import java.util.Map.Entry;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
-import com.rex.components.valo.CommonParts;
 import com.rex.components.valo.Icons;
+import com.rex.components.valo.PopupViews;
 import com.rex.components.valo.StringGenerator;
-import com.rex.components.valo.Tables;
+import com.rex.components.valo.Tabsheets;
 import com.rex.components.valo.TestIcon;
+import com.rex.components.valo.TextFields;
 import com.rex.components.valo.ValoMenuLayout;
 import com.rex.components.valo.ValoThemeSessionInitListener;
 import com.rex.core.views.FreqView;
@@ -75,7 +76,7 @@ public class ReportEngineUI extends UI {
 
     
     @WebServlet(value = "/*", asyncSupported = true)
-    @VaadinServletConfiguration(productionMode = false, ui = ReportEngineUI.class, heartbeatInterval = 30)
+    @VaadinServletConfiguration(productionMode = true, ui = ReportEngineUI.class, heartbeatInterval = 30, widgetset = "com.rex.core.widgetset.ReportengineWidgetset")
     public static class Servlet extends VaadinServlet {
 
         @Override
@@ -84,6 +85,7 @@ public class ReportEngineUI extends UI {
             getService().addSessionInitListener(
                     new ValoThemeSessionInitListener());
         }
+        
     }
     
     class Loader implements Runnable {
@@ -117,14 +119,14 @@ public class ReportEngineUI extends UI {
     	//DataGenerator.create();
     	
         themeVariants.put("tests-valo", "Default");
-        themeVariants.put("tests-valo-blueprint", "Blueprint");
-        themeVariants.put("tests-valo-dark", "Dark");
-        themeVariants.put("tests-valo-facebook", "Facebook");
-        themeVariants.put("tests-valo-flatdark", "Flat dark");
-        themeVariants.put("tests-valo-flat", "Flat");
+        //themeVariants.put("tests-valo-blueprint", "Blueprint");
+        //themeVariants.put("tests-valo-dark", "Dark");
+        //themeVariants.put("tests-valo-facebook", "Facebook");
+        //themeVariants.put("tests-valo-flatdark", "Flat dark");
+        //themeVariants.put("tests-valo-flat", "Flat");
         themeVariants.put("tests-valo-light", "Light");
-        themeVariants.put("tests-valo-metro", "Metro");
-        themeVariants.put("tests-valo-reindeer", "Migrate Reindeer");
+        //themeVariants.put("tests-valo-metro", "Metro");
+        //themeVariants.put("tests-valo-reindeer", "Migrate Reindeer");
     }
     
     //private final TestIcon testIcon = new TestIcon(100);
@@ -220,11 +222,11 @@ public class ReportEngineUI extends UI {
         //navigator.addView("trees", Trees.class);
         //navigator.addView("tables", Tables.class);
         //navigator.addView("spanels", SplitPanels.class);
-        //navigator.addView("kit1", Tabsheets.class);
-        //navigator.addView("kit2", Tables.class);
+        navigator.addView("kit1", Tabsheets.class);
+        navigator.addView("kit2", TextFields.class);
         //navigator.addView("colorpickers", ColorPickers.class);
         //navigator.addView("selects", NativeSelects.class);
-        //navigator.addView("kit3", JobView.class);
+        navigator.addView("kit3", PopupViews.class);
         //navigator.addView("popupviews", PopupViews.class);
         //navigator.addView("dragging", Dragging.class);
 

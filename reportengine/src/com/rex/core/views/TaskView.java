@@ -1,9 +1,8 @@
 package com.rex.core.views;
 
-import java.sql.SQLException;
+import java.io.File;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
+import javax.swing.GroupLayout.Alignment;
 
 import com.rex.backend.entity.Job;
 import com.rex.backend.entity.Task;
@@ -15,13 +14,18 @@ import com.vaadin.annotations.Title;
 import com.vaadin.data.Item;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FileResource;
+import com.vaadin.server.ThemeResource;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Link;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.Table.Align;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.themes.Runo;
 
 
 /**
@@ -41,8 +45,10 @@ public class TaskView extends HorizontalLayout implements View{
 
     private JPAContainer<Task> taskContainer;
     
-    private static final String[] VISIBLE_COLS = {"taskName", "jobName", "taskStatus", "startTime", "endTime", "taskFile"};
+    private static final String[] VISIBLE_COLS = {"taskName", "jobDesc", "taskStatus", "startTime", "endTime", "link"};
     
+    private final String SAVE_PATH = "D:\\REX";
+    private final String ACCESS_PATH = "\\\\163.50.47.14\\rex\\";
 
     public TaskView(){
     	
@@ -67,7 +73,7 @@ public class TaskView extends HorizontalLayout implements View{
     	
     	initTaskList();
     	
-    	tasksList.setVisibleColumns(VISIBLE_COLS);
+    	//tasksList.setVisibleColumns(VISIBLE_COLS);
     	
     	//taskList.setImmediate(true);
     	
@@ -83,19 +89,47 @@ public class TaskView extends HorizontalLayout implements View{
     
     private void initTaskList(){
     	tasksList.setContainerDataSource(taskContainer);
-    	tasksList.addGeneratedColumn("jobName", new ColumnGenerator(){
+    	tasksList.addGeneratedColumn("jobDesc", new ColumnGenerator(){
 			@Override
 			public Object generateCell(Table source, Object itemId, Object columnId) {
 				// TODO Auto-generated method stub
 				
 				Item item = source.getItem(itemId);
 				Job job = (Job)item.getItemProperty("job").getValue();
-				String jobName = job.getJobName();
+				String jobDesc = job.getJobDesc();
 				
-				return jobName;
+				return jobDesc;
 			}
     		
     	});
+    	
+    	tasksList.addGeneratedColumn("link", new ColumnGenerator() {
+
+            @Override
+            public Object generateCell(Table source, Object itemId, Object columnId) {
+            	
+                String url = (String) source.getItem(itemId).getItemProperty("taskFile").getValue();
+                
+                url = url.substring(7);
+                
+                //String linkTitle = url.substring(36);
+            	
+                File file = new File(ACCESS_PATH + url);
+                
+                Link link = new Link(null, new FileResource(file));
+                link.setIcon(new ThemeResource("../icons/png/file-excel.png"));
+                
+                //Button link = new Button();
+                //link.setStyleName(Runo.BUTTON_LINK); // use the theme you are currently extending here
+                //BrowserWindowOpener opener = new BrowserWindowOpener(new ExternalResource(url));
+                //opener.extend(link);
+                
+                return link;
+            }
+        });
+    	
+    	tasksList.setColumnAlignment("link", Align.CENTER);
+    	tasksList.setColumnWidth("link", 50);
     	
     	tasksList.setVisibleColumns(VISIBLE_COLS);
     	tasksList.setSelectable(true);

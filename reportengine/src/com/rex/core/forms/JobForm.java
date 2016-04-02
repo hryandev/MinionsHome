@@ -7,11 +7,19 @@ import java.util.List;
 import com.rex.backend.entity.Freq;
 import com.rex.backend.entity.Job;
 import com.rex.backend.service.JobService;
+import com.rex.core.components.CountryBean;
+import com.rex.core.components.DatabaseAccessService;
+import com.rex.core.components.DatabaseAccessServiceImpl;
 import com.rex.core.components.FreqTable;
 import com.rex.core.components.FreqsListWindow;
+import com.rex.core.components.SuggestingComboBox;
+import com.rex.core.components.SuggestingContainer;
+import com.rex.core.components.SuggestingTextField;
 import com.rex.core.views.JobView;
 import com.vaadin.annotations.Theme;
 import com.vaadin.data.Item;
+import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.IndexedContainer;
@@ -51,6 +59,11 @@ public class JobForm extends FormLayout {
     private JobView jobView;
     private boolean addFlag = false;
     
+    
+    private SuggestingComboBox comboBox;
+    private SuggestingTextField stf = new SuggestingTextField();
+    final DatabaseAccessService databaseAccessService = new DatabaseAccessServiceImpl();
+    
     FieldGroup binder;
 
     // Easily bind forms to beans and manage validation and buffering
@@ -72,6 +85,20 @@ public class JobForm extends FormLayout {
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
         setVisible(false);
+        
+        final SuggestingContainer container = new SuggestingContainer(databaseAccessService);
+        comboBox = new SuggestingComboBox("Suggesting ComboBox without default value");
+        comboBox.setImmediate(true);
+        comboBox.addValueChangeListener(new Property.ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                Notification.show("Selected item: " + event.getProperty().getValue(), Type.HUMANIZED_MESSAGE);
+                // tell the custom container that a value has been selected. This is necessary to ensure that the
+                // selected value is displayed by the ComboBox
+                container.setSelectedCountryBean((CountryBean) event.getProperty().getValue());
+            }
+        });
+        comboBox.setContainerDataSource(container);
     }
 
     private void buildLayout() {
@@ -94,7 +121,7 @@ public class JobForm extends FormLayout {
         //tableArea.addComponent(toolbar);
         //tableArea.addComponent(freqTable);
         
-		addComponents(actions, jobName, jobDesc, jobMacro, activate, freqTable);
+		addComponents(actions, jobName, jobDesc, jobMacro, activate, freqTable, comboBox, stf);
 		
 		setSizeFull();
 		setSpacing(true);
@@ -125,7 +152,6 @@ public class JobForm extends FormLayout {
             addFlag = false;
             jobView.getJobList().select(null);
             jobView.getJobPanel().setVisible(false);
-            
         } catch (FieldGroup.CommitException e) {
             // Validation exceptions could be shown here
         }

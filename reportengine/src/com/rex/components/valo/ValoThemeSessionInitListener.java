@@ -1,5 +1,7 @@
 package com.rex.components.valo;
 
+import javax.servlet.ServletContext;
+
 import org.jsoup.nodes.Element;
 
 import com.vaadin.server.BootstrapFragmentResponse;
@@ -12,6 +14,7 @@ import com.vaadin.server.SessionInitListener;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.SystemMessagesInfo;
 import com.vaadin.server.SystemMessagesProvider;
+import com.vaadin.server.VaadinServlet;
 
 public class ValoThemeSessionInitListener implements SessionInitListener {
 
@@ -34,6 +37,14 @@ public class ValoThemeSessionInitListener implements SessionInitListener {
             @Override
             public void modifyBootstrapPage(final BootstrapPageResponse response) {
                 final Element head = response.getDocument().head();
+                
+                //ServletContext servletContext = VaadinServlet.getCurrent().getServletContext();
+                //String path = servletContext.getRealPath("/WebContent/VAADIN/themes/custom/ico/rex_logo.ico");
+                
+                head.appendElement("link").attr("rel", "shortcut icon")
+                	.attr("href", "./VAADIN/themes/custom/ico/rex_logo.ico")
+                	.attr("type", "image/x-icon");
+                
                 head.appendElement("meta").attr("name", "viewport")
                         .attr("content", "width=device-width, initial-scale=1");
                 head.appendElement("meta")
@@ -42,6 +53,8 @@ public class ValoThemeSessionInitListener implements SessionInitListener {
                 head.appendElement("meta")
                         .attr("name", "apple-mobile-web-app-status-bar-style")
                         .attr("content", "black");
+                
+                
             }
 
             @Override
