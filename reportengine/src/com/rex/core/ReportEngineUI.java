@@ -7,12 +7,11 @@ import java.util.Map.Entry;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
+import com.rex.components.valo.Forms;
 import com.rex.components.valo.Icons;
-import com.rex.components.valo.PopupViews;
 import com.rex.components.valo.StringGenerator;
 import com.rex.components.valo.Tabsheets;
 import com.rex.components.valo.TestIcon;
-import com.rex.components.valo.TextFields;
 import com.rex.components.valo.ValoMenuLayout;
 import com.rex.components.valo.ValoThemeSessionInitListener;
 import com.rex.core.views.FreqView;
@@ -223,10 +222,10 @@ public class ReportEngineUI extends UI {
         //navigator.addView("tables", Tables.class);
         //navigator.addView("spanels", SplitPanels.class);
         navigator.addView("kit1", Tabsheets.class);
-        navigator.addView("kit2", TextFields.class);
+        navigator.addView("kit2", Forms.class);
         //navigator.addView("colorpickers", ColorPickers.class);
         //navigator.addView("selects", NativeSelects.class);
-        navigator.addView("kit3", PopupViews.class);
+        navigator.addView("kit3", Forms.class);
         //navigator.addView("popupviews", PopupViews.class);
         //navigator.addView("dragging", Dragging.class);
 

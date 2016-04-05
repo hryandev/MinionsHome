@@ -3,4 +3,22 @@
 
 .tests-valo-light {
    @include valotest;
+    
+    .address-editor {
+        cursor: text;
+        .v-textfield {
+            border: 0px solid white;
+            &:focus {
+                @include box-shadow(none);
+            }
+        }
+        .v-button:focus:after {
+            border-color: inherit;
+            @include box-shadow(none);
+        }
+        .v-button-small {
+            margin-top: 2px;
+        }
+            
+    }
 }

@@ -25,7 +25,7 @@ public class FreqTable extends VerticalLayout{
 	public IndexedContainer org_container = new IndexedContainer();
 	
 	public FreqTable(){
-		freqList = new Grid("Frequency");
+		freqList = new Grid();
 		
 		configure();
 		buildLayout();
@@ -119,7 +119,7 @@ public class FreqTable extends VerticalLayout{
 		this.revised_container = container;
 		
 		removeComponent(freqList);
-		freqList = new Grid("Frequency");
+		freqList = new Grid();
 		freqList.setContainerDataSource(container);
 		configure();
 		

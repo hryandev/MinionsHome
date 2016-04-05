@@ -2081,6 +2081,8 @@ div.v-layout.v-horizontal.v-widget {
 	-webkit-box-shadow: inset 0 1px 0 white;
 	box-shadow: inset 0 1px 0 white;
 	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+	
+	
 }
 
 .tests-valo-light .v-button:before {
@@ -14837,3 +14839,28 @@ div.v-layout.v-horizontal.v-widget {
 	display: block;
 	margin: 0 auto;
 }
+
+.tests-valo-light .address-editor {
+	cursor: text;
+}
+
+.tests-valo-light .address-editor .v-textfield {
+	border: 0px solid white;
+}
+
+.tests-valo-light .address-editor .v-textfield:focus {
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.tests-valo-light .address-editor .v-button:focus:after {
+	border-color: inherit;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.tests-valo-light .address-editor .v-button-small {
+	margin-top: 2px;
+}
+
+

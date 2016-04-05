@@ -20,6 +20,13 @@ public class CustomTable extends VerticalLayout{
 	
 	String caption = "";
 	
+	public CustomTable(){
+		gridList = new Grid();
+		
+		configure();
+		buildLayout();
+	}
+	
 	public CustomTable(String caption){
 		this.caption = caption;
 		gridList = new Grid(caption);
@@ -85,7 +92,7 @@ public class CustomTable extends VerticalLayout{
 		this.revised_container = container;
 		
 		removeComponent(gridList);
-		gridList = new Grid(caption);
+		gridList = new Grid();
 		gridList.setContainerDataSource(container);
 		
 		gridList.removeColumn("id");

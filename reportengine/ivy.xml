@@ -50,6 +50,7 @@
 		<dependency org="org.eclipse.persistence" name="javax.persistence" rev="2.1.0" />
 		<dependency org="org.hibernate" name="hibernate-validator" rev="5.1.3.Final" />
 		<dependency org="org.apache.commons" name="commons-lang3" rev="3.0"/>
+		<dependency org="org.vaadin" name="suggestfield" rev="0.0.4" />
 		
 	</dependencies>
 </ivy-module>

@@ -28,6 +28,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TextField;
@@ -87,7 +88,7 @@ public class JobForm extends FormLayout {
         setVisible(false);
         
         final SuggestingContainer container = new SuggestingContainer(databaseAccessService);
-        comboBox = new SuggestingComboBox("Suggesting ComboBox without default value");
+        comboBox = new SuggestingComboBox("Suggesting ComboBox");
         comboBox.setImmediate(true);
         comboBox.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
@@ -121,7 +122,11 @@ public class JobForm extends FormLayout {
         //tableArea.addComponent(toolbar);
         //tableArea.addComponent(freqTable);
         
-		addComponents(actions, jobName, jobDesc, jobMacro, activate, freqTable, comboBox, stf);
+        Label caption = new Label("Frequency");
+        caption.addStyleName("h3");
+        caption.addStyleName("colored");
+        
+		addComponents(jobName, jobDesc, jobMacro, activate, caption, freqTable);
 		
 		setSizeFull();
 		setSpacing(true);

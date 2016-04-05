@@ -1,11 +1,8 @@
 package com.rex.core.views;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
-
 import com.rex.backend.entity.Job;
-import com.rex.backend.entity.Task;
 import com.rex.core.ReportEngineUI;
+import com.rex.core.components.JobPanel;
 import com.rex.core.forms.JobForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
@@ -38,13 +35,14 @@ public class JobView extends HorizontalLayout implements View{
     Button newContact = new Button("New job");
 
     JobForm jobForm;
-    Panel rightPanel;
+    //Panel rightPanel;
+    JobPanel rightPanel;
     
     private JPAContainer<Job> job;
     
 	public JobView(){
 		jobForm = new JobForm(this);
-		rightPanel = new Panel();
+		rightPanel = new JobPanel(jobForm);
 		//EntityManager em = Persistence.createEntityManagerFactory("reportengine").createEntityManager();
     	//em.getEntityManagerFactory().getCache().evict(Job.class);
 		job = JPAContainerFactory.make(Job.class,
@@ -98,9 +96,9 @@ public class JobView extends HorizontalLayout implements View{
 		jobList.setSizeFull();
 		left.setExpandRatio(jobList, 1);
 		
-		VerticalLayout right = new VerticalLayout();
-		right.addComponent(jobForm);
-		right.setSizeFull();
+		//VerticalLayout right = new VerticalLayout();
+		//right.addComponent(jobForm);
+		//right.setSizeFull();
 		
 		/*HorizontalLayout panelCaption = new HorizontalLayout();
 		panelCaption.setMargin(true);
@@ -108,9 +106,9 @@ public class JobView extends HorizontalLayout implements View{
 		panelCaption.addComponent(new Label("Test Panel Caption"));
 		panelCaption.addComponent(new Button("Button1"));*/
 		
-		rightPanel.setWidth("100%");
-		rightPanel.setContent(jobForm);
-		rightPanel.setVisible(false);
+		//rightPanel.setWidth("100%");
+		//rightPanel.setContent(jobForm);
+		//rightPanel.setVisible(false);
 		
 		HorizontalSplitPanel sp = new HorizontalSplitPanel(left, rightPanel);
 		sp.setSizeFull();

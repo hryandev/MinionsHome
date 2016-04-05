@@ -35,6 +35,7 @@ import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.OptionGroup;
@@ -90,7 +91,7 @@ public class FreqForm extends FormLayout {
     }
 
     private void configureComponents() {
-    	jobTable = new JobTable("Dispatch to Job");
+    	jobTable = new JobTable();
     	
     	freqName.setValue("");
     	freqDesc.setValue("");
@@ -149,7 +150,12 @@ public class FreqForm extends FormLayout {
         HorizontalLayout actions = new HorizontalLayout(save, cancel);
         actions.setSpacing(true);
         
-		addComponents(actions, freqName, freqDesc, freqType, executeOption, startTime, interval, repeat, jobTable);
+        Label caption = new Label("Dispatch to job");
+        caption.addStyleName("h3");
+        caption.addStyleName("colored");
+        
+        
+		addComponents(actions, freqName, freqDesc, freqType, executeOption, startTime, interval, repeat, caption, jobTable);
 		
 		setSizeFull();
 		setSpacing(true);

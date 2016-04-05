@@ -1,8 +1,8 @@
 package com.rex.core.views;
 
 import java.io.File;
-
-import javax.swing.GroupLayout.Alignment;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.rex.backend.entity.Job;
 import com.rex.backend.entity.Task;
@@ -25,7 +25,6 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.Align;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.themes.Runo;
 
 
 /**
@@ -45,7 +44,8 @@ public class TaskView extends HorizontalLayout implements View{
 
     private JPAContainer<Task> taskContainer;
     
-    private static final String[] VISIBLE_COLS = {"taskName", "jobDesc", "taskStatus", "startTime", "endTime", "link"};
+    
+    private static Map<String, String> COLUMNS = new LinkedHashMap<String, String>();
     
     private final String SAVE_PATH = "D:\\REX";
     private final String ACCESS_PATH = "\\\\163.50.47.14\\rex\\";
@@ -61,21 +61,12 @@ public class TaskView extends HorizontalLayout implements View{
 		//taskList.setContainerDataSource(task);
     	//initConnectionPool();
     	//initContainer();
+    	initColumn();
 		configureComponents();
     }
     
     private void configureComponents() {
-    	//taskList.removeColumn("id");
-    	//taskList.removeColumn("job");
-    	//taskList.removeColumn("jobID");
-    	//taskList.setSelectionMode(Grid.SelectionMode.SINGLE);
-    	//taskList.addSelectionListener(e -> jobForm.edit(jobList.getSelectedRow()));
-    	
     	initTaskList();
-    	
-    	//tasksList.setVisibleColumns(VISIBLE_COLS);
-    	
-    	//taskList.setImmediate(true);
     	
     	addComponent(tasksList);
     	
@@ -128,12 +119,25 @@ public class TaskView extends HorizontalLayout implements View{
             }
         });
     	
+    	for(String key : COLUMNS.keySet()){
+    		tasksList.setColumnHeader(key, COLUMNS.get(key));
+    	}
+    	
     	tasksList.setColumnAlignment("link", Align.CENTER);
     	tasksList.setColumnWidth("link", 50);
     	
-    	tasksList.setVisibleColumns(VISIBLE_COLS);
+    	tasksList.setVisibleColumns(COLUMNS.keySet().toArray());
     	tasksList.setSelectable(true);
     	tasksList.setImmediate(true);
+    }
+    
+    public void initColumn(){
+    	COLUMNS.put("taskName", "Task Name");
+    	COLUMNS.put("taskStatus", "Task Status");
+    	COLUMNS.put("startTime", "Start Time");
+    	COLUMNS.put("endTime", "End Time");
+    	COLUMNS.put("link", "Link");
+    	
     }
     
     public void showError(String errorString) {

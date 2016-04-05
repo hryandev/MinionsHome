@@ -42,7 +42,7 @@ public class ValoThemeSessionInitListener implements SessionInitListener {
                 //String path = servletContext.getRealPath("/WebContent/VAADIN/themes/custom/ico/rex_logo.ico");
                 
                 head.appendElement("link").attr("rel", "shortcut icon")
-                	.attr("href", "./VAADIN/themes/custom/ico/rex_logo.ico")
+                	.attr("href", "./VAADIN/themes/custom/ico/rxico.ico")
                 	.attr("type", "image/x-icon");
                 
                 head.appendElement("meta").attr("name", "viewport")

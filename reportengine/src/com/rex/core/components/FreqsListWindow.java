@@ -120,7 +120,6 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
         root.setExpandRatio(freqsList, 1);
         root.setSpacing(true);
         
-        //setSizeUndefined();
         setContent(root);
         setCaption("Select Frequency");
     }
