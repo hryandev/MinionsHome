@@ -37,6 +37,8 @@ public class MailForm extends VerticalLayout{
 		//this.setHeight("100%");
 		
 		final Label caption = new Label("Mail");
+		caption.addStyleName("h3");
+		caption.addStyleName("colored");
 		addComponent(caption);
 		
 		//setWidth("600px");

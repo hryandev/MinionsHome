@@ -2,7 +2,7 @@ package com.rex.core.components;
 
 import com.rex.core.forms.JobForm;
 import com.rex.core.forms.MailForm;
-import com.vaadin.event.ShortcutAction;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -35,7 +35,7 @@ public class JobPanel extends Panel{
 	private void configureComponents(){
 		tabs = new TabSheet();
 		
-		Tab tabJob = tabs.addTab(jobForm, "Job");
+		Tab tabJob = tabs.addTab(jobForm, "Job Detail");
 		Tab tabMail = tabs.addTab(mailForm, "Mail");
 		//Tab tabTest = tabs.addTab(testForm, "Test");
 		
@@ -46,7 +46,7 @@ public class JobPanel extends Panel{
 		tabMail.setEnabled(true);
 		
 		save.setStyleName(ValoTheme.BUTTON_PRIMARY);
-        save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
+        //save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
 		
 	}
 	
@@ -54,28 +54,27 @@ public class JobPanel extends Panel{
 		VerticalLayout content = new VerticalLayout();
 		
 		HorizontalLayout toolbar = new HorizontalLayout();
+		
 		toolbar.setSpacing(true);
+		//toolbar.setWidth("100%");
 		
 		Label blank = new Label("");
 		blank.setWidth("950px");
+		
 		//CssLayout toolbar = new CssLayout();
 		//toolbar.setWidth("100%");
 		
-		//AbsoluteLayout toolbar = new AbsoluteLayout();
-		
-		save.addStyleName("right");
-		cancel.addStyleName("right");
-		
 		toolbar.addComponents(blank, save, cancel);
-		//toolbar.addComponent(save, "right: 12px;");
-		//toolbar.addComponent(cancel, "right: 8px;");
 		
-		//toolbar.setComponentAlignment(save, Alignment.TOP_RIGHT);
-		//toolbar.setComponentAlignment(cancel, Alignment.TOP_RIGHT);
+		toolbar.setComponentAlignment(save, Alignment.BOTTOM_RIGHT);
+		toolbar.setComponentAlignment(cancel, Alignment.BOTTOM_RIGHT);
+		
 		
 		content.setSpacing(true);
 		content.setMargin(true);
 		content.addComponents(toolbar, tabs);
+		
+		content.setResponsive(true);
 		
 		tabs.addStyleName("framed");
 		
