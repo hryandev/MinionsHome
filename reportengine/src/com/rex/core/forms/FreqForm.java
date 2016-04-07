@@ -29,11 +29,13 @@ import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.shared.ui.datefield.Resolution;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
@@ -139,7 +141,7 @@ public class FreqForm extends FormLayout {
     	//startTime.setVisible(false);
     	
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
-        save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
+        //save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
         setVisible(false);
         
     }
@@ -147,19 +149,31 @@ public class FreqForm extends FormLayout {
     private void buildLayout() {
         setMargin(true);
 
-        HorizontalLayout actions = new HorizontalLayout(save, cancel);
-        actions.setSpacing(true);
+        //HorizontalLayout actions = new HorizontalLayout(save, cancel);
+        //actions.setSpacing(true);
+        
+        GridLayout toolbar = new GridLayout(2, 1);
+		toolbar.setWidth("100%");
+		
+		toolbar.setSpacing(true);
+		
+		toolbar.addComponent(save, 0, 0);
+		toolbar.addComponent(cancel, 1, 0);
+		
+		toolbar.setColumnExpandRatio(0, 3);
+		
+		toolbar.setComponentAlignment(save, Alignment.MIDDLE_RIGHT);
+		toolbar.setComponentAlignment(cancel, Alignment.MIDDLE_LEFT);
         
         Label caption = new Label("Dispatch to job");
         caption.addStyleName("h3");
         caption.addStyleName("colored");
         
-        
-		addComponents(actions, freqName, freqDesc, freqType, executeOption, startTime, interval, repeat, caption, jobTable);
+		addComponents(toolbar, freqName, freqDesc, freqType, executeOption, startTime, interval, repeat, caption, jobTable);
 		
 		setSizeFull();
 		setSpacing(true);
-		this.setHeight("100%");
+		setHeight("100%");
 		
     }
 

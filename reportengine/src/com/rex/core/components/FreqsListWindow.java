@@ -94,6 +94,14 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     	freqsList.setColumnOrder("freqName", "freqDesc");
     	
     	freqsList.removeColumn("id");
+    	freqsList.removeColumn("freqDesc");
+    	freqsList.removeColumn("freqType");
+    	
+    	freqsList.removeColumn("interval");
+    	freqsList.removeColumn("repeat");
+    	freqsList.removeColumn("jobList");
+        
+        
         
     	freqsList.setSelectionMode(Grid.SelectionMode.MULTI);
     	

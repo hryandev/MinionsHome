@@ -58,6 +58,11 @@ public class Job {
 	@Column(name = "JOB_QTM")
     private int jobQtm;
 
+	@Column(name = "JOB_MLSBT")
+    private String mailSubject = "";
+	
+	@Column(name = "JOB_MLBDY")
+    private String mailBody = "";
 	
 	public Job(){
 		this.id = UUID.randomUUID().toString();
@@ -138,6 +143,22 @@ public class Job {
 
 	public void setJobQtm(int jobQtm) {
 		this.jobQtm = jobQtm;
+	}
+	
+	public String getMailSubject() {
+		return mailSubject;
+	}
+
+	public void setMailSubject(String mailSubject) {
+		this.mailSubject = mailSubject;
+	}
+
+	public String getMailBody() {
+		return mailBody;
+	}
+
+	public void setMailBody(String mailBody) {
+		this.mailBody = mailBody;
 	}
 
 	@Override

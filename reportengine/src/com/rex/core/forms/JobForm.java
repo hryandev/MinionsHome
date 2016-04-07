@@ -16,6 +16,7 @@ import com.rex.core.components.SuggestingComboBox;
 import com.rex.core.components.SuggestingContainer;
 import com.rex.core.components.SuggestingTextField;
 import com.rex.core.views.JobView;
+import com.vaadin.addon.jpacontainer.EntityItem;
 import com.vaadin.annotations.Theme;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -58,19 +59,35 @@ public class JobForm extends FormLayout {
     
     private Job job;
     private JobView jobView;
-    private boolean addFlag = false;
+    public boolean addFlag = false;
     
     
     private SuggestingComboBox comboBox;
     private SuggestingTextField stf = new SuggestingTextField();
     final DatabaseAccessService databaseAccessService = new DatabaseAccessServiceImpl();
     
-    FieldGroup binder;
+    public FieldGroup binder;
 
     // Easily bind forms to beans and manage validation and buffering
-    private BeanFieldGroup<Job> formFieldBindings;
+    public BeanFieldGroup<Job> formFieldBindings;
 
+    
     public JobForm(JobView jobView) {
+    	this.jobView = jobView;
+        configureComponents();
+        buildLayout();
+    }
+    
+    public JobForm(JobView jobView, Job job) {
+    	this.jobView = jobView;
+    	this.job = job;
+    	
+        configureComponents();
+        buildLayout();
+    }
+    
+    public JobForm(JobView jobView, boolean addFlag) {
+    	this.addFlag = addFlag;
     	this.jobView = jobView;
         configureComponents();
         buildLayout();
@@ -85,7 +102,7 @@ public class JobForm extends FormLayout {
     	
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
-        setVisible(false);
+        setVisible(true);
         
         final SuggestingContainer container = new SuggestingContainer(databaseAccessService);
         comboBox = new SuggestingComboBox("Suggesting ComboBox");
@@ -170,14 +187,16 @@ public class JobForm extends FormLayout {
         jobView.getJobPanel().setVisible(false);
         
         addFlag = false;
+        jobView.getSplitPanel().removeComponent(this);
+        jobView.destroyJobPanel();
     }
 
     public void add(Job job) {
     	jobView.getJobPanel().setVisible(true);
     	jobView.getJobPanel().setCaption("New Job");
+    	
         this.job = job;
         addFlag = true;
-        
         
         IndexedContainer container = new IndexedContainer();
         container.addContainerProperty("id", String.class, null);
@@ -198,18 +217,17 @@ public class JobForm extends FormLayout {
     }
     
     public void edit(Object item){
-		jobView.getJobPanel().setVisible(true);
+		//jobView.getJobPanel().setVisible(true);
 		Item jobItem = jobView.getJob().getItem(item);
 		
 		if(jobItem != null){
 			String jobid = (String)jobItem.getItemProperty("id").getValue();
 			job = jobView.getJob().getItem(item).getEntity();
-			jobView.getJobPanel().setCaption("Job - " + jobItem.getItemProperty("jobName").getValue());
+			//jobView.getJobPanel().setCaption("Job - " + jobItem.getItemProperty("jobName").getValue());
 			freqTable.setOrgContainer(getFreqs(jobid));
 			freqTable.update(getFreqs(jobid));
 	
-			if (jobItem != null) {
-				// formFieldBindings = BeanFieldGroup.bindFieldsBuffered(job, this);
+			/*if (jobItem != null) {
 				binder = new FieldGroup(jobItem);
 				binder.setBuffered(true);
 	
@@ -219,10 +237,25 @@ public class JobForm extends FormLayout {
 				binder.bind(activate, "activate");
 	
 				jobName.focus();
-			}
+			}*/
 		}
 		
 		setVisible(jobItem != null);
+    }
+    
+    public void edit(Item jobItem){
+    	if(jobItem != null){
+			String jobid = (String)jobItem.getItemProperty("id").getValue();
+			//job = jobView.getJob().getItem(item).getEntity();
+			freqTable.setOrgContainer(getFreqs(jobid));
+			freqTable.update(getFreqs(jobid));
+		}
+		
+		setVisible(jobItem != null);
+    }
+    
+    public void setJob(Job job){
+    	this.job = job;
     }
     
     public void openFreqsWindow(){
@@ -296,6 +329,39 @@ public class JobForm extends FormLayout {
     	}
     }
     
+    public void saveFreqs(boolean addFlag){
+    	List<Freq> fList = getRevisedFreqList();
+    	
+    	JobService jobService = new JobService();
+        
+    	if(addFlag){
+    		jobService.addFreqs(job.getId(), fList);
+    	}else{
+    		addList = new ArrayList<Freq>();
+    		delList = new ArrayList<Freq>();
+    		
+    		for(Freq f : orgFreqs){
+    		    if(!fList.contains(f)){
+    		    	delList.add(f);
+    		    }
+        	}
+        	
+        	for(Freq freq : fList){
+	        	if(!orgFreqs.contains(freq)){
+	        		addList.add(freq);
+	        	}
+        	}
+        	
+        	if(delList != null){
+        		jobService.removeFreqs(job.getId(), delList);
+        	}
+        	
+        	if(addList != null){
+        		jobService.addFreqs(job.getId(), addList);
+        	}
+    	}
+    }
+    
     public List<Freq> getRevisedListAdd(){
     	List<Freq> fList = new ArrayList<>();
     	
@@ -332,5 +398,50 @@ public class JobForm extends FormLayout {
     	return fList;
     	
     }
+    
+    public void saveUserGroup(){
+    	JobService jobService = new JobService();
+    	
+    	String jobid = job.getId();
+    	String userid = "ken.wang@murata.com";
+    	String tocc = "T";
+    	
+    	//jobService.saveUserGroup(jobid, userid, tocc);
+    	
+    }
+
+	public TextField getJobName() {
+		return jobName;
+	}
+
+	public void setJobName(TextField jobName) {
+		this.jobName = jobName;
+	}
+
+	public TextField getJobDesc() {
+		return jobDesc;
+	}
+
+	public void setJobDesc(TextField jobDesc) {
+		this.jobDesc = jobDesc;
+	}
+
+	public TextField getJobMacro() {
+		return jobMacro;
+	}
+
+	public void setJobMacro(TextField jobMacro) {
+		this.jobMacro = jobMacro;
+	}
+
+	public CheckBox getActivate() {
+		return activate;
+	}
+
+	public void setActivate(CheckBox activate) {
+		this.activate = activate;
+	}
+    
+    
 
 }

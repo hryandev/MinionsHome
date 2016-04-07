@@ -10,7 +10,6 @@ import javax.persistence.TypedQuery;
 
 import com.rex.backend.entity.Freq;
 import com.rex.backend.entity.Job;
-import com.rex.backend.entity.JobFreq;
 
 /**
  * 

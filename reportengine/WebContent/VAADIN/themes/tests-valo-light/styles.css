@@ -14863,4 +14863,6 @@ div.v-layout.v-horizontal.v-widget {
 	margin-top: 2px;
 }
 
-
+.tests-valo-light .right .v-button {
+	float: right;
+}

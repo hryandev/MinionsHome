@@ -27,6 +27,11 @@ public class JobListWindow<T> extends CustomListWindow<T> {
 		cList.setColumnOrder("jobName", "jobDesc");
 		cList.removeColumn("id");
 		cList.removeColumn("freqs");
+		cList.removeColumn("jobMacro");
+		cList.removeColumn("flag");
+		cList.removeColumn("jobQtm");
+		cList.removeColumn("mailSubject");
+		cList.removeColumn("mailBody");
 		
 		cList.setSelectionMode(Grid.SelectionMode.MULTI);
 		

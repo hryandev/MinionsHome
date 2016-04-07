@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.rex.backend.entity.Job;
 import com.rex.backend.entity.Task;
+import com.rex.components.valo.Icons;
 import com.rex.core.ReportEngineUI;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
@@ -15,7 +16,6 @@ import com.vaadin.data.Item;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FileResource;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Link;
@@ -36,7 +36,6 @@ import com.vaadin.ui.TextField;
 @Title("Task")
 public class TaskView extends HorizontalLayout implements View{
 	private static final long serialVersionUID = -6467889953177179133L;
-
 	
 	TextField filter = new TextField();
     public Grid taskList = new Grid();
@@ -44,21 +43,15 @@ public class TaskView extends HorizontalLayout implements View{
 
     private JPAContainer<Task> taskContainer;
     
-    
     private static Map<String, String> COLUMNS = new LinkedHashMap<String, String>();
     
-    private final String SAVE_PATH = "D:\\REX";
+    private final String SAVE_FOLDER = "ExcelModule";
     private final String ACCESS_PATH = "\\\\163.50.47.14\\rex\\";
 
     public TaskView(){
-    	
-    	//EntityManager em = Persistence.createEntityManagerFactory("reportengine").createEntityManager();
-    	
-    	//em.getEntityManagerFactory().getCache().evict(Task.class);
     	taskContainer = JPAContainerFactory.make(Task.class,
 	               ReportEngineUI.PERSISTENCE_UNIT);
     	
-		//taskList.setContainerDataSource(task);
     	//initConnectionPool();
     	//initContainer();
     	initColumn();
@@ -94,6 +87,33 @@ public class TaskView extends HorizontalLayout implements View{
     		
     	});
     	
+    	tasksList.addGeneratedColumn("status", new ColumnGenerator(){
+			@Override
+			public Object generateCell(Table source, Object itemId, Object columnId) {
+				// TODO Auto-generated method stub
+				
+				String val = (String) source.getItem(itemId).getItemProperty("taskStatus").getValue();
+				String status = "";
+				
+				switch(val){
+					case "R":
+						status = "Running";
+						break;
+					case "C":
+						status = "Complete";
+						break;
+					case "E":
+						status = "Error";
+						break;
+					default:
+						break;
+					
+				}
+				
+				return status;
+			}
+    	});
+    	
     	tasksList.addGeneratedColumn("link", new ColumnGenerator() {
 
             @Override
@@ -101,14 +121,16 @@ public class TaskView extends HorizontalLayout implements View{
             	
                 String url = (String) source.getItem(itemId).getItemProperty("taskFile").getValue();
                 
-                url = url.substring(7);
+                int col = url.indexOf(SAVE_FOLDER);
                 
-                //String linkTitle = url.substring(36);
-            	
-                File file = new File(ACCESS_PATH + url);
+                url = url.substring(col);
+                //url = url.substring(7);
+                String svrPath = ACCESS_PATH + url;
+                
+                File file = new File(svrPath);
                 
                 Link link = new Link(null, new FileResource(file));
-                link.setIcon(new ThemeResource("../icons/png/file-excel.png"));
+                link.setIcon(new Icons("file-excel").get());
                 
                 //Button link = new Button();
                 //link.setStyleName(Runo.BUTTON_LINK); // use the theme you are currently extending here
@@ -133,7 +155,7 @@ public class TaskView extends HorizontalLayout implements View{
     
     public void initColumn(){
     	COLUMNS.put("taskName", "Task Name");
-    	COLUMNS.put("taskStatus", "Task Status");
+    	COLUMNS.put("status", "Task Status");
     	COLUMNS.put("startTime", "Start Time");
     	COLUMNS.put("endTime", "End Time");
     	COLUMNS.put("link", "Link");
