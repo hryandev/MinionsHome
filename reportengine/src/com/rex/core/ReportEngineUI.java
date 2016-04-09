@@ -7,16 +7,15 @@ import java.util.Map.Entry;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
-import com.rex.components.valo.Forms;
 import com.rex.components.valo.Icons;
 import com.rex.components.valo.StringGenerator;
-import com.rex.components.valo.Tabsheets;
 import com.rex.components.valo.TestIcon;
 import com.rex.components.valo.ValoMenuLayout;
 import com.rex.components.valo.ValoThemeSessionInitListener;
 import com.rex.core.views.FreqView;
 import com.rex.core.views.JobView;
 import com.rex.core.views.MainView;
+import com.rex.core.views.SimpleLoginView;
 import com.rex.core.views.TaskView;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
@@ -35,6 +34,8 @@ import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
+import com.vaadin.server.Page.UriFragmentChangedEvent;
+import com.vaadin.server.Page.UriFragmentChangedListener;
 import com.vaadin.server.Resource;
 import com.vaadin.server.Responsive;
 import com.vaadin.server.ThemeResource;
@@ -69,50 +70,25 @@ import com.vaadin.ui.themes.ValoTheme;
 @Title("Report EngineXcel")
 @Push(transport = Transport.LONG_POLLING)
 public class ReportEngineUI extends UI {
+	public static final String TITLE = "Report EngineXcel";
+	
 	public static final String PERSISTENCE_UNIT = "reportengine";
 	
     private boolean testMode = false;
-
-    
-    @WebServlet(value = "/*", asyncSupported = true)
-    @VaadinServletConfiguration(productionMode = true, ui = ReportEngineUI.class, heartbeatInterval = 30, widgetset = "com.rex.core.widgetset.ReportengineWidgetset")
-    public static class Servlet extends VaadinServlet {
-
-        @Override
-        protected void servletInitialized() throws ServletException {
-            super.servletInitialized();
-            getService().addSessionInitListener(
-                    new ValoThemeSessionInitListener());
-        }
-        
-    }
-    
-    class Loader implements Runnable {
-
-        @Override
-        public void run() {
-            // Simulate a heavy database operation
-            try {
-                Thread.sleep(100000);
-            } catch (InterruptedException e) {
-            }
-
-            // Wrap UI updates in access to properly deal with locking
-            access(() -> {
-                	final String f = Page.getCurrent().getUriFragment();
-                    if(f.equals("!task")){
-                    	Page.getCurrent().reload();	
-                    }
-                    
-                    // Stop polling once the update is done
-                    setPollInterval(-1);
-                
-            });
-            
-        }
-    }
     
     private static LinkedHashMap<String, String> themeVariants = new LinkedHashMap<String, String>();
+    
+    public static ValoMenuLayout root;
+    public static ComponentContainer viewDisplay;
+    public static CssLayout menu = new CssLayout();
+    public static CssLayout menuItemsLayout = new CssLayout();
+    
+    public static Navigator navigator;
+    public static final LinkedHashMap<String, String> menuItems = new LinkedHashMap<String, String>();
+    
+    public static TaskView taskView = new TaskView();
+    
+    public static int taskCount = 0;
     
     static {
     	//DataGenerator.create();
@@ -126,49 +102,34 @@ public class ReportEngineUI extends UI {
         themeVariants.put("tests-valo-light", "Light");
         //themeVariants.put("tests-valo-metro", "Metro");
         //themeVariants.put("tests-valo-reindeer", "Migrate Reindeer");
-    }
-    
-    //private final TestIcon testIcon = new TestIcon(100);
-
-    ValoMenuLayout root = new ValoMenuLayout();
-    ComponentContainer viewDisplay = root.getContentContainer();
-    CssLayout menu = new CssLayout();
-    CssLayout menuItemsLayout = new CssLayout();
-    {
+        
         menu.setId("testMenu");
     }
-    private Navigator navigator;
-    private final LinkedHashMap<String, String> menuItems = new LinkedHashMap<String, String>();
     
-    private TaskView taskView = new TaskView();
-    
-    private int taskCount = 0;
+    @WebServlet(value = "/*", asyncSupported = true)
+    @VaadinServletConfiguration(productionMode = true, ui = ReportEngineUI.class, widgetset = "com.rex.core.widgetset.ReportengineWidgetset")
+    public static class Servlet extends VaadinServlet {
+
+        @Override
+        protected void servletInitialized() throws ServletException {
+            super.servletInitialized();
+            getService().addSessionInitListener(
+                    new ValoThemeSessionInitListener());
+        }
+        
+    }
     
     @Override
     protected void init(final VaadinRequest request) {
     	
-    	//this.setPollInterval(20000);
+    	boolean isLoggedIn = getSession().getAttribute("user") != null;
     	
-    	/*addPollListener(new UIEvents.PollListener() {
-            @Override
-            public void poll(UIEvents.PollEvent event) {
-                //log.debug("Polling");
-            	
-            	Page.getCurrent().reload();
-            	Notification.show("Refreshed");
-            }
-        });*/
+    	if(!isLoggedIn){
     	
-    	//new Thread(new Loader()).start();
-    	/*access(() -> {
-        	final String f = Page.getCurrent().getUriFragment();
-            if(f.equals("!task")){
-            	Page.getCurrent().reload();	
-            }
-        	
-        	UI.getCurrent().push();
-        
-    	});*/
+    	root = new ValoMenuLayout();
+    	viewDisplay = root.getContentContainer();
+    	
+    	navigator = new Navigator(this, this);
     	
         if (request.getParameter("test") != null) {
             testMode = true;
@@ -194,24 +155,25 @@ public class ReportEngineUI extends UI {
             Responsive.makeResponsive(this);
         }
 
-        getPage().setTitle("Report EngineXcel");
-        setContent(root);
+        getPage().setTitle(TITLE);
+        //setContent(root);
         setTheme("tests-valo-light");
         
         root.setComponentAlignment(viewDisplay, Alignment.MIDDLE_LEFT);
-        
-        root.addMenu(buildMenu());
+        //root.addMenu(buildMenu(navigator));
         addStyleName(ValoTheme.UI_WITH_MENU);
         
         
         //getPage().addUriFragmentChangedListener(event -> present(event.getUriFragment()));
-        
-        navigator = new Navigator(this, viewDisplay);
+        //navigator = new Navigator(this, this);
+        //navigator = new Navigator(this, viewDisplay);
 
-        navigator.addView("reportlist", MainView.class);
-        navigator.addView("job", new JobView());
-        navigator.addView("task", taskView);
-        navigator.addView("frequency", new FreqView());
+        navigator.addView(SimpleLoginView.NAME, SimpleLoginView.class);
+        //getNavigator().addView(MainView.NAME, MainView.class);
+        //navigator.addView("reportlist", MainView.class);
+        //navigator.addView("job", new JobView());
+        //navigator.addView("task", taskView);
+        //navigator.addView("frequency", new FreqView());
         //navigator.addView("user", DateFields.class);
         //navigator.addView("kit2", Forms.class);
         //navigator.addView("checkboxes", CheckBoxes.class);
@@ -221,17 +183,18 @@ public class ReportEngineUI extends UI {
         //navigator.addView("trees", Trees.class);
         //navigator.addView("tables", Tables.class);
         //navigator.addView("spanels", SplitPanels.class);
-        navigator.addView("kit1", Tabsheets.class);
-        navigator.addView("kit2", Forms.class);
+        //navigator.addView("kit1", Tabsheets.class);
+        //navigator.addView("kit2", Forms.class);
         //navigator.addView("colorpickers", ColorPickers.class);
         //navigator.addView("selects", NativeSelects.class);
-        navigator.addView("kit3", Forms.class);
+        //navigator.addView("kit3", Forms.class);
         //navigator.addView("popupviews", PopupViews.class);
         //navigator.addView("dragging", Dragging.class);
 
         final String f = Page.getCurrent().getUriFragment();
         if (f == null || f.equals("")) {
-            navigator.navigateTo("reportlist");
+            //navigator.navigateTo(MainView.NAME);
+            //navigator.navigateTo(SimpleLoginView.NAME);
         }
 
         navigator.setErrorView(MainView.class);
@@ -240,60 +203,63 @@ public class ReportEngineUI extends UI {
 
             @Override
             public boolean beforeViewChange(final ViewChangeEvent event) {
+            	
+            	// Check if a user has logged in
+                boolean isLoggedIn = getSession().getAttribute("user") != null;
+                boolean isLoginView = event.getNewView() instanceof SimpleLoginView;
+
+                if (!isLoggedIn && !isLoginView) {
+                    // Redirect to login view always if a user has not yet
+                    // logged in
+                    getNavigator().navigateTo(SimpleLoginView.NAME);
+                    return false;
+
+                } else if (isLoggedIn && isLoginView) {
+                    // If someone tries to access to login view while logged in,
+                    // then cancel
+                    return false;
+                }
+                
                 return true;
             }
 
             @Override
             public void afterViewChange(final ViewChangeEvent event) {
-                for (final Iterator<Component> it = menuItemsLayout.iterator(); it
-                        .hasNext();) {
-                    it.next().removeStyleName("selected");
-                }
-                for (final Entry<String, String> item : menuItems.entrySet()) {
-                    if (event.getViewName().equals(item.getKey())) {
-                        for (final Iterator<Component> it = menuItemsLayout
-                                .iterator(); it.hasNext();) {
-                            final Component c = it.next();
-                            if (c.getCaption() != null
-                                    && c.getCaption().startsWith(
-                                            item.getValue())) {
-                                c.addStyleName("selected");
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-                menu.removeStyleName("valo-menu-visible");
-                
-                
-                final String f = Page.getCurrent().getUriFragment();
-                if(f.equals("!task")){
-                	taskCount = taskView.getTaskCount();
-                	
-                	Button taskBtn = (Button)menuItemsLayout.getComponent(3);
-                	
-                	String caption = "Task <span class=\"valo-menu-badge\">"+taskCount+"</span>";
-                	
-                	taskBtn.setCaption(caption);
-                	
-                	UI.getCurrent().setPollInterval(50000);
-                	UI.getCurrent().addPollListener(new UIEvents.PollListener() {
-                        @Override
-                        public void poll(UIEvents.PollEvent event) {
-                            //log.debug("Polling");
-                        	
-                        	Page.getCurrent().reload();
-                        	
-                        	taskBtn.setCaption(caption);
-                        }
-                    });
-                }else{
-                	UI.getCurrent().setPollInterval(-1);
-                }
-                
+            	
             }
         });
+        }else{
+        	getPage().addUriFragmentChangedListener(
+                    new UriFragmentChangedListener() {
+                public void uriFragmentChanged(
+                        UriFragmentChangedEvent source) {
+                    navigator.navigateTo(source.getUriFragment().substring(1));
+                 }
+             });
+        	
+        	//configAfterSuccess();
+        	//viewDisplay = root.getContentContainer();
+        	//root.setComponentAlignment(viewDisplay, Alignment.MIDDLE_LEFT);
+        	
+        	//navigator = (Navigator) UI.getCurrent().getSession().getAttribute("navigator");
+        	
+        	UI.getCurrent().setContent(root);
+        	Responsive.makeResponsive(this);
+        	
+        	setTheme("tests-valo-light");
+        	addStyleName(ValoTheme.UI_WITH_MENU);
+        	
+        	
+        	final String f = Page.getCurrent().getUriFragment();
+            
+            if (f == null || f.equals("")) {
+                navigator.navigateTo(MainView.NAME);
+                //navigator.navigateTo(SimpleLoginView.NAME);
+            }else{
+            	navigator.navigateTo(f.substring(1));
+            }
+
+        }
 
     }
 
@@ -345,7 +311,7 @@ public class ReportEngineUI extends UI {
         return menu;
     }
 
-    CssLayout buildMenu() {
+    public static CssLayout buildMenu() {
         // Add items
         menuItems.put("reportlist", "Report List");
         menuItems.put("job", "Job");
@@ -422,7 +388,7 @@ public class ReportEngineUI extends UI {
         Label label = null;
         int count = -1;
         taskCount = taskView.getTaskCount();
-        for (final Entry<String, String> item : menuItems.entrySet()) {
+        for (Entry<String, String> item : menuItems.entrySet()) {
             if (item.getKey().equals("job")) {
                 label = new Label("Scheduler", ContentMode.HTML);
                 label.setPrimaryStyleName("valo-menu-subtitle");
@@ -452,7 +418,7 @@ public class ReportEngineUI extends UI {
                 label.setSizeUndefined();
                 menuItemsLayout.addComponent(label);
             }
-            final Button b = new Button(item.getValue(), new ClickListener() {
+            Button b = new Button(item.getValue(), new ClickListener() {
                 @Override
                 public void buttonClick(final ClickEvent event) {
                 	
@@ -460,7 +426,10 @@ public class ReportEngineUI extends UI {
                 		Page.getCurrent().reload();
                 	}*/
                 	
-                    navigator.navigateTo(item.getKey());
+                	//Page.getCurrent().setUriFragment("!"+item.getKey());
+                	
+                	navigator.navigateTo(item.getKey());
+                	Page.getCurrent().setUriFragment("!"+item.getKey());
                 }
             });
             if (count == 1) {
@@ -478,6 +447,100 @@ public class ReportEngineUI extends UI {
                 + count + "</span>");
 
         return menu;
+    }
+    
+    public static void configAfterSuccess(){
+    	navigator = new Navigator(UI.getCurrent(), viewDisplay);
+    	
+    	UI.getCurrent().getSession().setAttribute("navigator", navigator);
+    	
+        root.addMenu(buildMenu());
+        UI.getCurrent().setContent(root);
+        
+        navigator.addView(SimpleLoginView.NAME, SimpleLoginView.class);
+        navigator.addView(MainView.NAME, MainView.class);
+        navigator.addView("reportlist", MainView.class);
+        navigator.addView("job", new JobView());
+        navigator.addView("task", ReportEngineUI.taskView);
+        navigator.addView("frequency", new FreqView());
+        navigator.addView("user", MainView.class);
+        navigator.addView("group", MainView.class);
+        
+        
+        /*final String f = Page.getCurrent().getUriFragment();
+        
+        if (f == null || f.equals("")) {
+            //navigator.navigateTo(MainView.NAME);
+            navigator.navigateTo(SimpleLoginView.NAME);
+        }else{
+        	navigator.navigateTo(f.substring(1));
+        }*/
+
+        //navigator.setErrorView(MainView.class);
+        
+        navigator.addViewChangeListener(new ViewChangeListener() {
+
+            @Override
+            public boolean beforeViewChange(final ViewChangeEvent event) {
+                
+                return true;
+            }
+
+            @Override
+            public void afterViewChange(final ViewChangeEvent event) {           	            	
+                for (final Iterator<Component> it = menuItemsLayout.iterator(); it
+                        .hasNext();) {
+                    it.next().removeStyleName("selected");
+                }
+                for (final Entry<String, String> item : menuItems.entrySet()) {
+                    if (event.getViewName().equals(item.getKey())) {
+                        for (final Iterator<Component> it = menuItemsLayout
+                                .iterator(); it.hasNext();) {
+                            final Component c = it.next();
+                            if (c.getCaption() != null
+                                    && c.getCaption().startsWith(
+                                            item.getValue())) {
+                                c.addStyleName("selected");
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                menu.removeStyleName("valo-menu-visible");
+                
+                
+                final String f = Page.getCurrent().getUriFragment();
+                if(null != f){
+	                if("task".equals(f.substring(1))){
+	                	taskCount = taskView.getTaskCount();
+	                	
+	                	Button taskBtn = (Button)menuItemsLayout.getComponent(3);
+	                	
+	                	String caption = "Task <span class=\"valo-menu-badge\">"+taskCount+"</span>";
+	                	
+	                	taskBtn.setCaption(caption);
+	                	
+	                	UI.getCurrent().setPollInterval(50000);
+	                	UI.getCurrent().addPollListener(new UIEvents.PollListener() {
+	                        @Override
+	                        public void poll(UIEvents.PollEvent event) {
+	                            //log.debug("Polling");
+	                        	
+	                        	Page.getCurrent().reload();
+	                        	
+	                        	taskBtn.setCaption(caption);
+	                        }
+	                    });
+	                }else{
+	                	UI.getCurrent().setPollInterval(-1);
+	                }
+                }
+                
+            }
+        });
+        
+        navigator.navigateTo(MainView.NAME);
     }
 
     private Component createThemeSelect() {
