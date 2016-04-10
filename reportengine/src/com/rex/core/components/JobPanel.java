@@ -8,6 +8,7 @@ import com.rex.core.views.JobView;
 import com.vaadin.data.Item;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.GridLayout;
@@ -87,12 +88,14 @@ public class JobPanel extends Panel{
 		Tab tabMail = tabs.addTab(mailForm);
 		//Tab tabTest = tabs.addTab(testForm, "Test");
 		
-		tabJob.setIcon(new Icons("checkbox-checked").get());
+		//tabJob.setIcon(new Icons("checkbox-checked").get());
+		tabJob.setIcon(FontAwesome.CHECK_SQUARE_O);
 		tabJob.setClosable(false);
 		tabJob.setEnabled(true);
 		
 		
-		tabMail.setIcon(new Icons("envelop").get());
+		//tabMail.setIcon(new Icons("envelop").get());
+		tabMail.setIcon(FontAwesome.ENVELOPE_O);
 		tabMail.setClosable(false);
 		tabMail.setEnabled(true);
 		

@@ -1,60 +1,32 @@
 package com.rex.core;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
-import com.rex.components.valo.Icons;
 import com.rex.components.valo.StringGenerator;
 import com.rex.components.valo.TestIcon;
-import com.rex.components.valo.ValoMenuLayout;
 import com.rex.components.valo.ValoThemeSessionInitListener;
-import com.rex.core.views.FreqView;
-import com.rex.core.views.JobView;
+import com.rex.core.views.LoginView;
 import com.rex.core.views.MainView;
 import com.rex.core.views.SimpleLoginView;
-import com.rex.core.views.TaskView;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.data.Container.Hierarchical;
 import com.vaadin.data.Item;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
-import com.vaadin.event.UIEvents;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
-import com.vaadin.server.Page.UriFragmentChangedEvent;
-import com.vaadin.server.Page.UriFragmentChangedListener;
 import com.vaadin.server.Resource;
 import com.vaadin.server.Responsive;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.shared.ui.ui.Transport;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
@@ -66,7 +38,7 @@ import com.vaadin.ui.themes.ValoTheme;
  */
 
 @SuppressWarnings("serial")
-@Theme("tests-valo")
+@Theme("tests-valo-light")
 @Title("Report EngineXcel")
 @Push(transport = Transport.LONG_POLLING)
 public class ReportEngineUI extends UI {
@@ -74,37 +46,11 @@ public class ReportEngineUI extends UI {
 	
 	public static final String PERSISTENCE_UNIT = "reportengine";
 	
+	protected static final String MAINVIEW = "main";
+	
+	public static Navigator navigator;
+	
     private boolean testMode = false;
-    
-    private static LinkedHashMap<String, String> themeVariants = new LinkedHashMap<String, String>();
-    
-    public static ValoMenuLayout root;
-    public static ComponentContainer viewDisplay;
-    public static CssLayout menu = new CssLayout();
-    public static CssLayout menuItemsLayout = new CssLayout();
-    
-    public static Navigator navigator;
-    public static final LinkedHashMap<String, String> menuItems = new LinkedHashMap<String, String>();
-    
-    public static TaskView taskView = new TaskView();
-    
-    public static int taskCount = 0;
-    
-    static {
-    	//DataGenerator.create();
-    	
-        themeVariants.put("tests-valo", "Default");
-        //themeVariants.put("tests-valo-blueprint", "Blueprint");
-        //themeVariants.put("tests-valo-dark", "Dark");
-        //themeVariants.put("tests-valo-facebook", "Facebook");
-        //themeVariants.put("tests-valo-flatdark", "Flat dark");
-        //themeVariants.put("tests-valo-flat", "Flat");
-        themeVariants.put("tests-valo-light", "Light");
-        //themeVariants.put("tests-valo-metro", "Metro");
-        //themeVariants.put("tests-valo-reindeer", "Migrate Reindeer");
-        
-        menu.setId("testMenu");
-    }
     
     @WebServlet(value = "/*", asyncSupported = true)
     @VaadinServletConfiguration(productionMode = true, ui = ReportEngineUI.class, widgetset = "com.rex.core.widgetset.ReportengineWidgetset")
@@ -121,16 +67,20 @@ public class ReportEngineUI extends UI {
     
     @Override
     protected void init(final VaadinRequest request) {
-    	
     	boolean isLoggedIn = getSession().getAttribute("user") != null;
+    	String f = Page.getCurrent().getUriFragment();
     	
-    	if(!isLoggedIn){
+    	getPage().setTitle(TITLE);
     	
-    	root = new ValoMenuLayout();
-    	viewDisplay = root.getContentContainer();
-    	
-    	navigator = new Navigator(this, this);
-    	
+    	// Create a navigator to control the views
+        navigator = new Navigator(this, this);
+        
+        // Create and register the views
+        navigator.addView("", new LoginView());
+        navigator.addView(MainView.NAME, new MainView());
+        
+        addStyleName(ValoTheme.UI_WITH_MENU);
+        
         if (request.getParameter("test") != null) {
             testMode = true;
 
@@ -139,66 +89,13 @@ public class ReportEngineUI extends UI {
                         ".v-app.v-app.v-app {font-family: Sans-Serif;}");
             }
         }
-
-        if (getPage().getWebBrowser().isIE()
-                && getPage().getWebBrowser().getBrowserMajorVersion() == 9) {
-            menu.setWidth("320px");
-        }
-        // Show .v-app-loading valo-menu-badge
-        // try {
-        // Thread.sleep(2000);
-        // } catch (InterruptedException e) {
-        // e.printStackTrace();
-        // }
-
+        
         if (!testMode) {
             Responsive.makeResponsive(this);
         }
-
-        getPage().setTitle(TITLE);
-        //setContent(root);
+        
         setTheme("tests-valo-light");
         
-        root.setComponentAlignment(viewDisplay, Alignment.MIDDLE_LEFT);
-        //root.addMenu(buildMenu(navigator));
-        addStyleName(ValoTheme.UI_WITH_MENU);
-        
-        
-        //getPage().addUriFragmentChangedListener(event -> present(event.getUriFragment()));
-        //navigator = new Navigator(this, this);
-        //navigator = new Navigator(this, viewDisplay);
-
-        navigator.addView(SimpleLoginView.NAME, SimpleLoginView.class);
-        //getNavigator().addView(MainView.NAME, MainView.class);
-        //navigator.addView("reportlist", MainView.class);
-        //navigator.addView("job", new JobView());
-        //navigator.addView("task", taskView);
-        //navigator.addView("frequency", new FreqView());
-        //navigator.addView("user", DateFields.class);
-        //navigator.addView("kit2", Forms.class);
-        //navigator.addView("checkboxes", CheckBoxes.class);
-        //navigator.addView("sliders", Sliders.class);
-        //navigator.addView("group", MenuBars.class);
-        //navigator.addView("panels", Panels.class);
-        //navigator.addView("trees", Trees.class);
-        //navigator.addView("tables", Tables.class);
-        //navigator.addView("spanels", SplitPanels.class);
-        //navigator.addView("kit1", Tabsheets.class);
-        //navigator.addView("kit2", Forms.class);
-        //navigator.addView("colorpickers", ColorPickers.class);
-        //navigator.addView("selects", NativeSelects.class);
-        //navigator.addView("kit3", Forms.class);
-        //navigator.addView("popupviews", PopupViews.class);
-        //navigator.addView("dragging", Dragging.class);
-
-        final String f = Page.getCurrent().getUriFragment();
-        if (f == null || f.equals("")) {
-            //navigator.navigateTo(MainView.NAME);
-            //navigator.navigateTo(SimpleLoginView.NAME);
-        }
-
-        navigator.setErrorView(MainView.class);
-
         navigator.addViewChangeListener(new ViewChangeListener() {
 
             @Override
@@ -206,12 +103,12 @@ public class ReportEngineUI extends UI {
             	
             	// Check if a user has logged in
                 boolean isLoggedIn = getSession().getAttribute("user") != null;
-                boolean isLoginView = event.getNewView() instanceof SimpleLoginView;
+                boolean isLoginView = event.getNewView() instanceof LoginView;
 
                 if (!isLoggedIn && !isLoginView) {
                     // Redirect to login view always if a user has not yet
                     // logged in
-                    getNavigator().navigateTo(SimpleLoginView.NAME);
+                    getNavigator().navigateTo(LoginView.NAME);
                     return false;
 
                 } else if (isLoggedIn && isLoginView) {
@@ -228,37 +125,9 @@ public class ReportEngineUI extends UI {
             	
             }
         });
-        }else{
-        	getPage().addUriFragmentChangedListener(
-                    new UriFragmentChangedListener() {
-                public void uriFragmentChanged(
-                        UriFragmentChangedEvent source) {
-                    navigator.navigateTo(source.getUriFragment().substring(1));
-                 }
-             });
-        	
-        	//configAfterSuccess();
-        	//viewDisplay = root.getContentContainer();
-        	//root.setComponentAlignment(viewDisplay, Alignment.MIDDLE_LEFT);
-        	
-        	//navigator = (Navigator) UI.getCurrent().getSession().getAttribute("navigator");
-        	
-        	UI.getCurrent().setContent(root);
-        	Responsive.makeResponsive(this);
-        	
-        	setTheme("tests-valo-light");
-        	addStyleName(ValoTheme.UI_WITH_MENU);
-        	
-        	
-        	final String f = Page.getCurrent().getUriFragment();
-            
-            if (f == null || f.equals("")) {
-                navigator.navigateTo(MainView.NAME);
-                //navigator.navigateTo(SimpleLoginView.NAME);
-            }else{
-            	navigator.navigateTo(f.substring(1));
-            }
-
+        
+        if(isLoggedIn && ("".equals(f) || null == f)){
+        	UI.getCurrent().getNavigator().navigateTo(MainView.NAME);
         }
 
     }
@@ -279,290 +148,7 @@ public class ReportEngineUI extends UI {
     public static boolean isTestMode() {
         return ((ReportEngineUI) getCurrent()).testMode;
     }
-
-    Component buildTestMenu() {
-        final CssLayout menu = new CssLayout();
-        menu.addStyleName("large-icons");
-
-        final Label logo = new Label("Va");
-        logo.setSizeUndefined();
-        logo.setPrimaryStyleName("valo-menu-logo");
-        menu.addComponent(logo);
-
-        Button b = new Button(
-                "Reference <span class=\"valo-menu-badge\">3</span>");
-        b.setIcon(FontAwesome.TH_LIST);
-        b.setPrimaryStyleName("valo-menu-item");
-        b.addStyleName("selected");
-        b.setHtmlContentAllowed(true);
-        menu.addComponent(b);
-
-        b = new Button("API");
-        b.setIcon(FontAwesome.BOOK);
-        b.setPrimaryStyleName("valo-menu-item");
-        menu.addComponent(b);
-
-        b = new Button("Examples <span class=\"valo-menu-badge\">12</span>");
-        b.setIcon(FontAwesome.TABLE);
-        b.setPrimaryStyleName("valo-menu-item");
-        b.setHtmlContentAllowed(true);
-        menu.addComponent(b);
-
-        return menu;
-    }
-
-    public static CssLayout buildMenu() {
-        // Add items
-        menuItems.put("reportlist", "Report List");
-        menuItems.put("job", "Job");
-        menuItems.put("task", "Task");
-        menuItems.put("frequency", "Frequency");
-        menuItems.put("user", "User");
-        //menuItems.put("comboboxes", "Combo Boxes");
-        //menuItems.put("selects", "Selects");
-        //menuItems.put("checkboxes", "Check Boxes & Option Groups");
-        //menuItems.put("sliders", "Sliders & Progress Bars");
-        //menuItems.put("colorpickers", "Color Pickers");
-        menuItems.put("group", "Group");
-        //menuItems.put("trees", "Trees");
-        //menuItems.put("tables", "Tables & Grids");
-        //menuItems.put("dragging", "Drag and Drop");
-        menuItems.put("kit1", "Kit1");
-        menuItems.put("kit2", "Kit2");
-        menuItems.put("kit3", "Kit3");
-        //menuItems.put("accordions", "Accordions");
-        //menuItems.put("popupviews", "Popup Views");
-        /*if (getPage().getBrowserWindowWidth() >= 768) {
-            menuItems.put("calendar", "Calendar");
-        }*/
-        //menuItems.put("forms", "Forms");
-
-        final HorizontalLayout top = new HorizontalLayout();
-        top.setWidth("100%");
-        top.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
-        top.addStyleName("valo-menu-title");
-        menu.addComponent(top);
-        //menu.addComponent(createThemeSelect());
-
-        final Button showMenu = new Button("Menu", new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                if (menu.getStyleName().contains("valo-menu-visible")) {
-                    menu.removeStyleName("valo-menu-visible");
-                } else {
-                    menu.addStyleName("valo-menu-visible");
-                }
-            }
-        });
-        showMenu.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        showMenu.addStyleName(ValoTheme.BUTTON_SMALL);
-        showMenu.addStyleName("valo-menu-toggle");
-        showMenu.setIcon(FontAwesome.LIST);
-        menu.addComponent(showMenu);
-
-        final Label title = new Label(
-                "<h3>Report <strong>EngineXcel</strong></h3>", ContentMode.HTML);
-        title.setSizeUndefined();
-        top.addComponent(title);
-        top.setExpandRatio(title, 1);
-
-        final MenuBar settings = new MenuBar();
-        settings.addStyleName("user-menu");
-        //final StringGenerator sg = new StringGenerator();
-        //final MenuItem settingsItem = settings.addItem(sg.nextString(true)
-        //        + " " + sg.nextString(true) + sg.nextString(false),
-        //        new ThemeResource("../tests-valo/img/profile-pic-300px.jpg"),
-        //        null);
-        final MenuItem settingsItem = settings.addItem("Mr. Murata",
-                new ThemeResource("../tests-valo/img/profile-pic-300px.jpg"),
-                null);
-        settingsItem.addItem("Edit Profile", null);
-        settingsItem.addItem("Preferences", null);
-        settingsItem.addSeparator();
-        settingsItem.addItem("Sign Out", null);
-        menu.addComponent(settings);
-
-        menuItemsLayout.setPrimaryStyleName("valo-menuitems");
-        menu.addComponent(menuItemsLayout);
-
-        Label label = null;
-        int count = -1;
-        taskCount = taskView.getTaskCount();
-        for (Entry<String, String> item : menuItems.entrySet()) {
-            if (item.getKey().equals("job")) {
-                label = new Label("Scheduler", ContentMode.HTML);
-                label.setPrimaryStyleName("valo-menu-subtitle");
-                label.addStyleName("h4");
-                label.setSizeUndefined();
-                menuItemsLayout.addComponent(label);
-            }
-            if (item.getKey().equals("user")) {
-                label.setValue(label.getValue()
-                        + " <span class=\"valo-menu-badge\">" + count
-                        + "</span>");
-                count = 0;
-                label = new Label("Authorization", ContentMode.HTML);
-                label.setPrimaryStyleName("valo-menu-subtitle");
-                label.addStyleName("h4");
-                label.setSizeUndefined();
-                menuItemsLayout.addComponent(label);
-            }
-            if (item.getKey().equals("kit1")) {
-                label.setValue(label.getValue()
-                        + " <span class=\"valo-menu-badge\">" + count
-                        + "</span>");
-                count = 0;
-                label = new Label("Kits", ContentMode.HTML);
-                label.setPrimaryStyleName("valo-menu-subtitle");
-                label.addStyleName("h4");
-                label.setSizeUndefined();
-                menuItemsLayout.addComponent(label);
-            }
-            Button b = new Button(item.getValue(), new ClickListener() {
-                @Override
-                public void buttonClick(final ClickEvent event) {
-                	
-                	/*if(item.getKey().equals("task")){
-                		Page.getCurrent().reload();
-                	}*/
-                	
-                	//Page.getCurrent().setUriFragment("!"+item.getKey());
-                	
-                	navigator.navigateTo(item.getKey());
-                	Page.getCurrent().setUriFragment("!"+item.getKey());
-                }
-            });
-            if (count == 1) {
-                b.setCaption(b.getCaption()
-                        + " <span class=\"valo-menu-badge\">"+taskCount+"</span>");
-            }
-            b.setHtmlContentAllowed(true);
-            b.setPrimaryStyleName("valo-menu-item");
-            //b.setIcon(testIcon.get());
-            b.setIcon(new Icons(item.getKey()).get());
-            menuItemsLayout.addComponent(b);
-            count++;
-        }
-        label.setValue(label.getValue() + " <span class=\"valo-menu-badge\">"
-                + count + "</span>");
-
-        return menu;
-    }
     
-    public static void configAfterSuccess(){
-    	navigator = new Navigator(UI.getCurrent(), viewDisplay);
-    	
-    	UI.getCurrent().getSession().setAttribute("navigator", navigator);
-    	
-        root.addMenu(buildMenu());
-        UI.getCurrent().setContent(root);
-        
-        navigator.addView(SimpleLoginView.NAME, SimpleLoginView.class);
-        navigator.addView(MainView.NAME, MainView.class);
-        navigator.addView("reportlist", MainView.class);
-        navigator.addView("job", new JobView());
-        navigator.addView("task", ReportEngineUI.taskView);
-        navigator.addView("frequency", new FreqView());
-        navigator.addView("user", MainView.class);
-        navigator.addView("group", MainView.class);
-        
-        
-        /*final String f = Page.getCurrent().getUriFragment();
-        
-        if (f == null || f.equals("")) {
-            //navigator.navigateTo(MainView.NAME);
-            navigator.navigateTo(SimpleLoginView.NAME);
-        }else{
-        	navigator.navigateTo(f.substring(1));
-        }*/
-
-        //navigator.setErrorView(MainView.class);
-        
-        navigator.addViewChangeListener(new ViewChangeListener() {
-
-            @Override
-            public boolean beforeViewChange(final ViewChangeEvent event) {
-                
-                return true;
-            }
-
-            @Override
-            public void afterViewChange(final ViewChangeEvent event) {           	            	
-                for (final Iterator<Component> it = menuItemsLayout.iterator(); it
-                        .hasNext();) {
-                    it.next().removeStyleName("selected");
-                }
-                for (final Entry<String, String> item : menuItems.entrySet()) {
-                    if (event.getViewName().equals(item.getKey())) {
-                        for (final Iterator<Component> it = menuItemsLayout
-                                .iterator(); it.hasNext();) {
-                            final Component c = it.next();
-                            if (c.getCaption() != null
-                                    && c.getCaption().startsWith(
-                                            item.getValue())) {
-                                c.addStyleName("selected");
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-                menu.removeStyleName("valo-menu-visible");
-                
-                
-                final String f = Page.getCurrent().getUriFragment();
-                if(null != f){
-	                if("task".equals(f.substring(1))){
-	                	taskCount = taskView.getTaskCount();
-	                	
-	                	Button taskBtn = (Button)menuItemsLayout.getComponent(3);
-	                	
-	                	String caption = "Task <span class=\"valo-menu-badge\">"+taskCount+"</span>";
-	                	
-	                	taskBtn.setCaption(caption);
-	                	
-	                	UI.getCurrent().setPollInterval(50000);
-	                	UI.getCurrent().addPollListener(new UIEvents.PollListener() {
-	                        @Override
-	                        public void poll(UIEvents.PollEvent event) {
-	                            //log.debug("Polling");
-	                        	
-	                        	Page.getCurrent().reload();
-	                        	
-	                        	taskBtn.setCaption(caption);
-	                        }
-	                    });
-	                }else{
-	                	UI.getCurrent().setPollInterval(-1);
-	                }
-                }
-                
-            }
-        });
-        
-        navigator.navigateTo(MainView.NAME);
-    }
-
-    private Component createThemeSelect() {
-        final NativeSelect ns = new NativeSelect();
-        ns.setNullSelectionAllowed(false);
-        ns.setId("themeSelect");
-        ns.addContainerProperty("caption", String.class, "");
-        ns.setItemCaptionPropertyId("caption");
-        for (final String identifier : themeVariants.keySet()) {
-            ns.addItem(identifier).getItemProperty("caption")
-                    .setValue(themeVariants.get(identifier));
-        }
-
-        ns.setValue("tests-valo");
-        ns.addValueChangeListener(new ValueChangeListener() {
-            @Override
-            public void valueChange(final ValueChangeEvent event) {
-                setTheme((String) ns.getValue());
-            }
-        });
-        return ns;
-    }
 
     static Handler actionHandler = new Handler() {
         private final Action ACTION_ONE = new Action("Action One");

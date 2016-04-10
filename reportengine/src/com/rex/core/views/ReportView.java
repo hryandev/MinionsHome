@@ -32,12 +32,12 @@ import com.vaadin.ui.TextField;
  * @author Ryan Hsu
  */
 
-@Theme("valo")
-@Title("Task")
-public class TaskView extends HorizontalLayout implements View{
+
+@Title("Report")
+public class ReportView extends HorizontalLayout implements View{
 	private static final long serialVersionUID = -6467889953177179133L;
 	
-	public static final String NAME = "task";
+	public static final String NAME = "report";
 	
 	TextField filter = new TextField();
     public Grid taskList = new Grid();
@@ -50,7 +50,7 @@ public class TaskView extends HorizontalLayout implements View{
     private final String SAVE_FOLDER = "ExcelModule";
     private final String ACCESS_PATH = "\\\\163.50.47.14\\rex\\";
 
-    public TaskView(){
+    public ReportView(){
     	taskContainer = JPAContainerFactory.make(Task.class,
 	               ReportEngineUI.PERSISTENCE_UNIT);
     	

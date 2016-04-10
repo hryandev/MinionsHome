@@ -29,6 +29,8 @@ import com.vaadin.ui.VerticalLayout;
 public class FreqView extends HorizontalLayout implements View{
 	private static final long serialVersionUID = -7993072104270238504L;
 	
+	public static final String NAME = "frequency";
+	
 	TextField filter = new TextField();
     public Grid freqList = new Grid();
     //public Table freqList = new Table();

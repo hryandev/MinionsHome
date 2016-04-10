@@ -1583,13 +1583,13 @@ div.v-layout.v-horizontal.v-widget {
 	z-index: 100;
 	top: 45%;
 	left: 50%;
-	width: 28px;
-	height: 28px;
+	width: 50px;
+	height: 50px;
 	padding: 9px;
 	margin-top: -24px;
 	margin-left: -24px;
-	background: #fff url(../valo/shared/img/spinner.gif) no-repeat 50%;
-	border-radius: 3px;
+	background: #fff url(../custom/gif/circle.gif) no-repeat 50%;
+	border-radius: 10px;
 }
 
 .tests-valo-light .v-app-loading:after {
@@ -1600,7 +1600,7 @@ div.v-layout.v-horizontal.v-widget {
 	text-align: center;
 	left: 0;
 	right: 0;
-	content: "Light Valo";
+	content: "";
 }
 
 .tests-valo-light .v-loading-indicator {
@@ -2081,8 +2081,6 @@ div.v-layout.v-horizontal.v-widget {
 	-webkit-box-shadow: inset 0 1px 0 white;
 	box-shadow: inset 0 1px 0 white;
 	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
-	
-	
 }
 
 .tests-valo-light .v-button:before {
@@ -14861,8 +14859,4 @@ div.v-layout.v-horizontal.v-widget {
 
 .tests-valo-light .address-editor .v-button-small {
 	margin-top: 2px;
-}
-
-.tests-valo-light .right .v-button {
-	float: right;
 }

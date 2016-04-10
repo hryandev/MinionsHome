@@ -1,38 +1,26 @@
 package com.rex.core.views;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
-
 import com.rex.backend.entity.User;
 import com.rex.backend.service.UserService;
-import com.rex.core.ReportEngineUI;
 import com.vaadin.data.validator.AbstractValidator;
-import com.vaadin.event.UIEvents;
-import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.Reindeer;
 import com.vaadin.ui.themes.ValoTheme;
 
-public class SimpleLoginView extends CustomComponent implements View,
+public class LoginView extends VerticalLayout implements View,
         Button.ClickListener {
 	private static final long serialVersionUID = 2607449182760444787L;
 
@@ -42,21 +30,15 @@ public class SimpleLoginView extends CustomComponent implements View,
     private final PasswordField password;
     private final Button loginButton;
     
-    //public static Navigator navigator;
-    
 
-    public SimpleLoginView() {
+    public LoginView() {
         setSizeFull();
 
-        //final CssLayout wrap = new CssLayout();
-		//wrap.setWidth("500px");
-		//wrap.addStyleName(ValoTheme.LAYOUT_CARD);
-		//wrap.setSizeUndefined();
-		//addComponent(wrap);
-		//setExpandRatio(wrap, 1);
+        final CssLayout wrap = new CssLayout();
+		wrap.setWidth("420px");
 		
         // Create the user input field
-        user = new TextField("User:");
+        user = new TextField("User");
         user.setWidth("300px");
         user.setRequired(true);
         user.setInputPrompt("staff ID");        
@@ -66,7 +48,7 @@ public class SimpleLoginView extends CustomComponent implements View,
         //user.setInvalidAllowed(false);
 
         // Create the password input field
-        password = new PasswordField("Password:");
+        password = new PasswordField("Password");
         password.setWidth("300px");
         password.addValidator(new PasswordValidator());
         password.setRequired(true);
@@ -80,34 +62,23 @@ public class SimpleLoginView extends CustomComponent implements View,
         // Create login button
         loginButton = new Button("Login", this);
         loginButton.addStyleName(ValoTheme.BUTTON_PRIMARY);
-
-        FormLayout form = new FormLayout(user, password, loginButton);
-        form.setWidth("500px");
-        form.setHeight("300px");
-		form.setMargin(true);
-		form.setSpacing(true);
-		form.setVisible(true);
-		//form.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-		//form.setSizeUndefined();
-		
-		//wrap.addComponent(form);
         
         // Add both to a panel
         VerticalLayout fields = new VerticalLayout(user, password, loginButton);
         fields.setCaption("");
         fields.setSpacing(true);
-        fields.setMargin(new MarginInfo(true, true, true, false));
-        fields.setSizeUndefined();
+        fields.setSizeFull();
         
-
-        // The view root layout
-        VerticalLayout viewLayout = new VerticalLayout(fields);
-        viewLayout.setSizeFull();
-        viewLayout.setComponentAlignment(fields, Alignment.MIDDLE_CENTER);
-        //viewLayout.setStyleName(Reindeer.LAYOUT_BLUE);
+        FormLayout form = new FormLayout(fields);
+        form.setMargin(new MarginInfo(true, true, true, true));
+        form.setComponentAlignment(fields, Alignment.MIDDLE_CENTER);
         
+        wrap.addComponent(form);
+        wrap.addStyleName(ValoTheme.LAYOUT_CARD);
         
-        setCompositionRoot(viewLayout);
+        addComponent(wrap);
+        setComponentAlignment(wrap, Alignment.MIDDLE_CENTER);
+        
     }
 
     @Override
