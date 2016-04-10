@@ -9050,6 +9050,10 @@ div.v-layout.v-horizontal.v-widget {
 	cursor: pointer;
 }
 
+.tests-valo-light .v-table-row:hover, .v-table-row-odd:hover {
+    background: lightgrey;
+}
+
 .tests-valo-light .v-table-body-noselection .v-table-row, .tests-valo-light .v-table-body-noselection .v-table-row-odd {
 	cursor: default;
 }
@@ -12517,7 +12521,6 @@ div.v-layout.v-horizontal.v-widget {
 
 .tests-valo-light .v-menubar-user-menu  > .v-menubar-menuitem {
 	color: inherit;
-	white-space: normal;
 	line-height: 1.4;
 	margin: 0;
 }

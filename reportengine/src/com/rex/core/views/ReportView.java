@@ -75,6 +75,35 @@ public class ReportView extends HorizontalLayout implements View{
     
     private void initTaskList(){
     	tasksList.setContainerDataSource(taskContainer);
+    	
+    	addGeneratedColumn();
+    	
+    	for(String key : COLUMNS.keySet()){
+    		tasksList.setColumnHeader(key, COLUMNS.get(key));
+    	}
+    	
+    	tasksList.setColumnAlignment("link", Align.CENTER);
+    	tasksList.setColumnWidth("link", 50);
+    	
+    	tasksList.setVisibleColumns(COLUMNS.keySet().toArray());
+    	tasksList.setSelectable(true);
+    	tasksList.setImmediate(true);
+    }
+    
+    public void initColumn(){
+    	COLUMNS.put("taskName", "Task Name");
+    	COLUMNS.put("status", "Task Status");
+    	COLUMNS.put("startTime", "Start Time");
+    	COLUMNS.put("endTime", "End Time");
+    	COLUMNS.put("link", "Link");
+    	
+    }
+    
+    public void showError(String errorString) {
+    	Notification.show(errorString, Type.ERROR_MESSAGE);
+    }
+    
+    public void addGeneratedColumn(){
     	tasksList.addGeneratedColumn("jobDesc", new ColumnGenerator(){
 			@Override
 			public Object generateCell(Table source, Object itemId, Object columnId) {
@@ -134,38 +163,9 @@ public class ReportView extends HorizontalLayout implements View{
                 Link link = new Link(null, new FileResource(file));
                 link.setIcon(new Icons("file-excel").get());
                 
-                //Button link = new Button();
-                //link.setStyleName(Runo.BUTTON_LINK); // use the theme you are currently extending here
-                //BrowserWindowOpener opener = new BrowserWindowOpener(new ExternalResource(url));
-                //opener.extend(link);
-                
                 return link;
             }
         });
-    	
-    	for(String key : COLUMNS.keySet()){
-    		tasksList.setColumnHeader(key, COLUMNS.get(key));
-    	}
-    	
-    	tasksList.setColumnAlignment("link", Align.CENTER);
-    	tasksList.setColumnWidth("link", 50);
-    	
-    	tasksList.setVisibleColumns(COLUMNS.keySet().toArray());
-    	tasksList.setSelectable(true);
-    	tasksList.setImmediate(true);
-    }
-    
-    public void initColumn(){
-    	COLUMNS.put("taskName", "Task Name");
-    	COLUMNS.put("status", "Task Status");
-    	COLUMNS.put("startTime", "Start Time");
-    	COLUMNS.put("endTime", "End Time");
-    	COLUMNS.put("link", "Link");
-    	
-    }
-    
-    public void showError(String errorString) {
-    	Notification.show(errorString, Type.ERROR_MESSAGE);
     }
 	
 	@Override

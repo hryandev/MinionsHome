@@ -39,7 +39,7 @@ import com.vaadin.ui.themes.ValoTheme;
  * @author Ryan Hsu
  */
 
-@Theme("valo")
+
 @Title("Main")
 public class MainView extends ValoMenuLayout implements View{
 	private static final long serialVersionUID = -6895300729283404531L;
@@ -59,13 +59,15 @@ public class MainView extends ValoMenuLayout implements View{
     private int taskCount = 0;
     
     private String userName = "Mr. Murata";
+    private User user = null;
     
     private MenuBar settings;
     private MenuItem settingsItem;
     
 
 	public MainView(){
-		User user = (User) UI.getCurrent().getSession().getAttribute("user");
+		user = (User) UI.getCurrent().getSession().getAttribute("user");
+		
 		if(user != null){
 			userName = user.getPrenom() + " " + user.getNom();
 		}
@@ -347,7 +349,7 @@ public class MainView extends ValoMenuLayout implements View{
 	public void enter(ViewChangeEvent event) {
 		// TODO Auto-generated method stub
 		boolean isLoggedIn = UI.getCurrent().getSession().getAttribute("user") != null;
-		User user = (User) UI.getCurrent().getSession().getAttribute("user");
+		user = (User) UI.getCurrent().getSession().getAttribute("user");
 		
 		
 		if(isLoggedIn && "".equals(event.getParameters())){
