@@ -11,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -54,6 +56,10 @@ public class Job {
 	
 	@Column(name = "JOB_FLAG")
     private String flag;
+	
+	@Column(name = "JOB_NXT")
+	@Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date nextExecTime;
 
 	@Column(name = "JOB_QTM")
     private int jobQtm;
@@ -63,7 +69,7 @@ public class Job {
 	
 	@Column(name = "JOB_MLBDY")
     private String mailBody = "";
-	
+
 	public Job(){
 		this.id = UUID.randomUUID().toString();
 	}
@@ -136,6 +142,13 @@ public class Job {
 		this.flag = flag;
 	}
 	
+	public java.util.Date getNextExecTime() {
+		return nextExecTime;
+	}
+
+	public void setNextExecTime(java.util.Date nextExecTime) {
+		this.nextExecTime = nextExecTime;
+	}
 	
 	public int getJobQtm() {
 		return jobQtm;

@@ -21,6 +21,7 @@ public class ValoThemeSessionInitListener implements SessionInitListener {
     @Override
     public void sessionInit(final SessionInitEvent event)
             throws ServiceException {
+    	
         event.getService().setSystemMessagesProvider(
                 new SystemMessagesProvider() {
 
@@ -32,6 +33,7 @@ public class ValoThemeSessionInitListener implements SessionInitListener {
                         return csm;
                     }
                 });
+        
         event.getSession().addBootstrapListener(new BootstrapListener() {
 
             @Override
@@ -63,6 +65,10 @@ public class ValoThemeSessionInitListener implements SessionInitListener {
                 // TODO Auto-generated method stub
             }
         });
+        
+        
+        //Session timeout
+        event.getSession().getSession().setMaxInactiveInterval(300);
     }
 
 }

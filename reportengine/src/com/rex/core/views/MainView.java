@@ -127,9 +127,11 @@ public class MainView extends ValoMenuLayout implements View{
             public void menuSelected(MenuItem selectedItem) {
             	// "Logout" the user
                 getSession().setAttribute("user", null);
+                getSession().close();
 
                 // Refresh this view, should redirect to login view
                 UI.getCurrent().getNavigator().navigateTo(LoginView.NAME);
+                
             }
         };
 

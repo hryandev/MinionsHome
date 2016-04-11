@@ -1,5 +1,10 @@
 package com.rex.core.views;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import com.rex.backend.entity.Freq;
 import com.rex.core.ReportEngineUI;
 import com.rex.core.forms.FreqForm;
@@ -7,10 +12,13 @@ import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
+import com.vaadin.data.util.converter.StringToDateConverter;
+import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.filter.Like;
 import com.vaadin.data.util.filter.Or;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
@@ -34,7 +42,7 @@ public class FreqView extends HorizontalLayout implements View{
 	TextField filter = new TextField();
     public Grid freqList = new Grid();
     //public Table freqList = new Table();
-    Button newContact = new Button("New Freq");
+    Button newContact = new Button();
 
     FreqForm freqForm;
     Panel rightPanel;
@@ -92,6 +100,9 @@ public class FreqView extends HorizontalLayout implements View{
 
 	private void buildLayout() {
 		HorizontalLayout actions = new HorizontalLayout(filter, newContact);
+		
+		newContact.setIcon(FontAwesome.PLUS);
+		
 		actions.setWidth("100%");
 		filter.setWidth("100%");
 		actions.setExpandRatio(filter, 1);

@@ -1,7 +1,12 @@
 package com.rex.core.views;
 
 import java.io.File;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import com.rex.backend.entity.Job;
@@ -13,6 +18,8 @@ import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.data.Item;
+import com.vaadin.data.Property;
+import com.vaadin.data.util.converter.StringToDateConverter;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FileResource;
@@ -41,7 +48,7 @@ public class TaskView extends HorizontalLayout implements View{
 	
 	TextField filter = new TextField();
     public Grid taskList = new Grid();
-    public Table tasksList = new Table();
+    public Table tasksList;
 
     private JPAContainer<Task> taskContainer;
     
@@ -61,6 +68,25 @@ public class TaskView extends HorizontalLayout implements View{
     }
     
     private void configureComponents() {
+    	tasksList = new Table() {
+
+            @Override
+            protected String formatPropertyValue(Object rowId, Object colId,
+                    Property property) {
+                Object v = property.getValue();
+                if (v instanceof Date) {
+                    Date dateValue = (Date) v;
+                    
+                    Timestamp ts = new Timestamp(dateValue.getTime());
+                    
+                    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(ts);
+                    
+                }
+                return super.formatPropertyValue(rowId, colId, property);
+            }
+
+        };
+    	
     	initTaskList();
     	
     	addComponent(tasksList);
@@ -141,7 +167,7 @@ public class TaskView extends HorizontalLayout implements View{
                 
                 return link;
             }
-        });
+        });    	
     	
     	for(String key : COLUMNS.keySet()){
     		tasksList.setColumnHeader(key, COLUMNS.get(key));
@@ -149,6 +175,28 @@ public class TaskView extends HorizontalLayout implements View{
     	
     	tasksList.setColumnAlignment("link", Align.CENTER);
     	tasksList.setColumnWidth("link", 50);
+    	
+    	tasksList.setConverter("startTime", new StringToDateConverter(){
+
+    		@Override
+
+    		public DateFormat getFormat(Locale locale){
+
+    			return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+    		}
+    	});
+    	
+    	tasksList.setConverter("endTime", new StringToDateConverter(){
+
+    		@Override
+
+    		public DateFormat getFormat(Locale locale){
+
+    			return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+    		}
+    	});
     	
     	tasksList.setVisibleColumns(COLUMNS.keySet().toArray());
     	tasksList.setSelectable(true);

@@ -2,17 +2,20 @@ package com.rex.core.views;
 
 import com.rex.backend.entity.User;
 import com.rex.backend.service.UserService;
+import com.rex.components.valo.Icons;
 import com.vaadin.data.validator.AbstractValidator;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
+import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.Image;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.PasswordField;
@@ -63,6 +66,9 @@ public class LoginView extends VerticalLayout implements View,
         loginButton = new Button("Login", this);
         loginButton.addStyleName(ValoTheme.BUTTON_PRIMARY);
         
+        Resource res = new Icons("kanban").get();
+        Image image = new Image(null, res);
+        
         // Add both to a panel
         VerticalLayout fields = new VerticalLayout(user, password, loginButton);
         fields.setCaption("");
@@ -76,8 +82,12 @@ public class LoginView extends VerticalLayout implements View,
         wrap.addComponent(form);
         wrap.addStyleName(ValoTheme.LAYOUT_CARD);
         
-        addComponent(wrap);
-        setComponentAlignment(wrap, Alignment.MIDDLE_CENTER);
+        VerticalLayout kanban = new VerticalLayout();
+        kanban.setWidth("420px");
+        kanban.addComponents(image, wrap);
+        
+        addComponent(kanban);
+        setComponentAlignment(kanban, Alignment.MIDDLE_CENTER);
         
     }
 

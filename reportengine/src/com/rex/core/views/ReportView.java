@@ -1,21 +1,25 @@
 package com.rex.core.views;
 
 import java.io.File;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import com.rex.backend.entity.Job;
 import com.rex.backend.entity.Task;
-import com.rex.components.valo.Icons;
 import com.rex.core.ReportEngineUI;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
-import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.data.Item;
+import com.vaadin.data.Property;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FileResource;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Link;
@@ -41,7 +45,7 @@ public class ReportView extends HorizontalLayout implements View{
 	
 	TextField filter = new TextField();
     public Grid taskList = new Grid();
-    public Table tasksList = new Table();
+    public Table tasksList;
 
     private JPAContainer<Task> taskContainer;
     
@@ -61,6 +65,25 @@ public class ReportView extends HorizontalLayout implements View{
     }
     
     private void configureComponents() {
+    	tasksList = new Table() {
+
+            @Override
+            protected String formatPropertyValue(Object rowId, Object colId,
+                    Property property) {
+                Object v = property.getValue();
+                if (v instanceof Date) {
+                    Date dateValue = (Date) v;
+                    
+                    Timestamp ts = new Timestamp(dateValue.getTime());
+                    
+                    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(ts);
+                    
+                }
+                return super.formatPropertyValue(rowId, colId, property);
+            }
+
+        };
+    	
     	initTaskList();
     	
     	addComponent(tasksList);
@@ -161,7 +184,7 @@ public class ReportView extends HorizontalLayout implements View{
                 File file = new File(svrPath);
                 
                 Link link = new Link(null, new FileResource(file));
-                link.setIcon(new Icons("file-excel").get());
+                link.setIcon(FontAwesome.FILE_EXCEL_O);
                 
                 return link;
             }

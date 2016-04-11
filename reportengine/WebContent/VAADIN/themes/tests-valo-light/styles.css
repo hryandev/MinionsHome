@@ -9042,16 +9042,17 @@ div.v-layout.v-horizontal.v-widget {
 
 .tests-valo-light .v-table-row {
 	background-color: white;
-	cursor: pointer;
+	cursor: default;
 }
 
 .tests-valo-light .v-table-row-odd {
 	background-color: #f5f5f5;
-	cursor: pointer;
+	cursor: default;
 }
 
 .tests-valo-light .v-table-row:hover, .v-table-row-odd:hover {
-    background: lightgrey;
+    opacity: 0.7;
+    cursor: default;
 }
 
 .tests-valo-light .v-table-body-noselection .v-table-row, .tests-valo-light .v-table-body-noselection .v-table-row-odd {

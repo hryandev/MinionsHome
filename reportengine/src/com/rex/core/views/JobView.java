@@ -1,8 +1,14 @@
 package com.rex.core.views;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import com.rex.backend.entity.Job;
 import com.rex.core.ReportEngineUI;
 import com.rex.core.components.JobPanel;
+import com.rex.core.components.StringToSqlDateConverter;
 import com.rex.core.forms.JobForm;
 import com.rex.core.forms.MailForm;
 import com.vaadin.addon.jpacontainer.EntityItem;
@@ -11,12 +17,14 @@ import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.data.Item;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.data.util.converter.StringToDateConverter;
+import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.filter.Like;
 import com.vaadin.data.util.filter.Or;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
@@ -39,7 +47,7 @@ public class JobView extends HorizontalLayout implements View{
 	
 	TextField filter = new TextField();
     public Grid jobList = new Grid();
-    Button newContact = new Button("New job");
+    Button newContact = new Button();
 
     JobForm jobForm = null;
     //Panel rightPanel;
@@ -79,12 +87,33 @@ public class JobView extends HorizontalLayout implements View{
        
        jobList.setContainerDataSource(job);
        
-       jobList.setColumnOrder("jobName", "jobDesc", "activate");
+       jobList.setColumnOrder("jobName", "nextExecTime", "activate");
        
        jobList.setImmediate(true);
        
+       jobList.getColumn("nextExecTime").setConverter(new StringToDateConverter() {
+    	   
+    	   @Override
+    	   public String convertToPresentation(Date value, Class<? extends String> targetType, Locale locale){
+    		   if (targetType != getPresentationType()) {
+    	            throw new ConversionException("Converter only supports " + getPresentationType().getName() + " (targetType was " + targetType.getName() + ")");
+    	        }
+
+    	        if (null == value)
+    	            return null;
+    			
+    	        Timestamp ts = new Timestamp(value.getTime());
+    	        
+    	        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(ts);
+    	   }
+
+       });
+       
+       //jobList.getColumn("nextExecTime").setConverter(new StringToSqlDateConverter());
+       
        jobList.removeColumn("id");
        jobList.removeColumn("freqs");
+       jobList.removeColumn("jobDesc");
        jobList.removeColumn("jobMacro");
        jobList.removeColumn("flag");
        jobList.removeColumn("jobQtm");
@@ -101,10 +130,14 @@ public class JobView extends HorizontalLayout implements View{
 
 	private void buildLayout() {
 		HorizontalLayout actions = new HorizontalLayout(filter, newContact);
+		
 		actions.setWidth("100%");
 		filter.setWidth("100%");
 		actions.setExpandRatio(filter, 1);
 
+		
+		newContact.setIcon(FontAwesome.PLUS);
+		
 		VerticalLayout left = new VerticalLayout(actions, jobList);
 		left.setSizeFull();
 		jobList.setSizeFull();
