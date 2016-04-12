@@ -72,15 +72,7 @@ public class MainView extends ValoMenuLayout implements View{
 	public MainView(){
 		user = (User) UI.getCurrent().getSession().getAttribute("user");
 		
-		if(user != null){
-			userName = user.getPrenom() + " " + user.getNom();
-			String photoPath = photoRootPath + user.getId() + "-1.JPG";
-			File file = new File(photoPath);
-			photo = new FileResource(file);
-		}else{
-			photo = new ThemeResource(DEFAULT_PHOTO);
-		}
-		
+		initUserInfo();
 		initViewMap();
 		initComponents();
 		addMenu(buildMenu());
@@ -377,6 +369,21 @@ public class MainView extends ValoMenuLayout implements View{
 		//iconMap.put("kit2", new Icons("kit2").get());
 		//iconMap.put("kit3", new Icons("kit3").get());
 		
+	}
+	
+	public void initUserInfo(){
+		if(user != null){
+			userName = user.getPrenom() + " " + user.getNom();
+			String photoPath = photoRootPath + user.getId() + "-1.JPG";
+			File file = new File(photoPath);
+			if(file.exists()){
+				photo = new FileResource(file);
+			}else{
+				photo = new ThemeResource(DEFAULT_PHOTO);
+			}
+		}else{
+			photo = new ThemeResource(DEFAULT_PHOTO);
+		}
 	}
 	
 	public void refreshReportCaption(){
