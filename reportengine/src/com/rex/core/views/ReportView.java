@@ -5,17 +5,21 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import com.rex.backend.entity.Job;
 import com.rex.backend.entity.Task;
+import com.rex.backend.entity.User;
+import com.rex.backend.service.JobService;
 import com.rex.core.ReportEngineUI;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Title;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
+import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FileResource;
@@ -29,6 +33,7 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.Align;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 
 
 /**
@@ -46,8 +51,13 @@ public class ReportView extends HorizontalLayout implements View{
 	TextField filter = new TextField();
     public Grid taskList = new Grid();
     public Table tasksList;
+    
+    private User user;
 
-    private JPAContainer<Task> taskContainer;
+    private boolean flag = false;
+    
+    public IndexedContainer taskContainer = null;
+    //private JPAContainer<Task> taskContainer;
     
     private static Map<String, String> COLUMNS = new LinkedHashMap<String, String>();
     
@@ -55,16 +65,12 @@ public class ReportView extends HorizontalLayout implements View{
     private final String ACCESS_PATH = "\\\\163.50.47.14\\rex\\";
 
     public ReportView(){
-    	taskContainer = JPAContainerFactory.make(Task.class,
-	               ReportEngineUI.PERSISTENCE_UNIT);
-    	
-    	//initConnectionPool();
-    	//initContainer();
+    	//initReport();
     	initColumn();
 		configureComponents();
     }
-    
-    private void configureComponents() {
+
+	public void configureComponents() {
     	tasksList = new Table() {
 
             @Override
@@ -84,8 +90,7 @@ public class ReportView extends HorizontalLayout implements View{
 
         };
     	
-    	initTaskList();
-    	
+        //initTaskList();
     	addComponent(tasksList);
     	
     	tasksList.setSizeFull();
@@ -96,30 +101,32 @@ public class ReportView extends HorizontalLayout implements View{
     	return taskContainer.getItemIds().size();
     }
     
-    private void initTaskList(){
-    	tasksList.setContainerDataSource(taskContainer);
-    	
-    	addGeneratedColumn();
-    	
-    	for(String key : COLUMNS.keySet()){
-    		tasksList.setColumnHeader(key, COLUMNS.get(key));
+    public void initTaskList(){
+    	if(taskContainer != null){
+	    	tasksList.setContainerDataSource(taskContainer);
+	    	
+	    	addGeneratedColumn();
+	    	
+	    	for(String key : COLUMNS.keySet()){
+	    		tasksList.setColumnHeader(key, COLUMNS.get(key));
+	    	}
+	    	
+	    	tasksList.setColumnAlignment("link", Align.CENTER);
+	    	tasksList.setColumnWidth("link", 50);
+	    	
+	    	tasksList.setVisibleColumns(COLUMNS.keySet().toArray());
+	    	tasksList.setSelectable(true);
+	    	tasksList.setImmediate(true);
     	}
     	
-    	tasksList.setColumnAlignment("link", Align.CENTER);
-    	tasksList.setColumnWidth("link", 50);
+    	this.flag = true;
     	
-    	tasksList.setVisibleColumns(COLUMNS.keySet().toArray());
-    	tasksList.setSelectable(true);
-    	tasksList.setImmediate(true);
     }
     
     public void initColumn(){
-    	COLUMNS.put("taskName", "Task Name");
-    	COLUMNS.put("status", "Task Status");
-    	COLUMNS.put("startTime", "Start Time");
-    	COLUMNS.put("endTime", "End Time");
-    	COLUMNS.put("link", "Link");
-    	
+    	COLUMNS.put("taskName", "Report Name");
+    	COLUMNS.put("endTime", "Delivery Time");
+    	COLUMNS.put("link", "Link");    	
     }
     
     public void showError(String errorString) {
@@ -190,12 +197,71 @@ public class ReportView extends HorizontalLayout implements View{
             }
         });
     }
+    
+    public void initReport(){
+    		taskContainer = new IndexedContainer();
+    		taskContainer.addContainerProperty("id", String.class, null);
+    		taskContainer.addContainerProperty("taskName", String.class, null);
+    		taskContainer.addContainerProperty("status", String.class, null);
+    		taskContainer.addContainerProperty("startTime", Date.class, null);
+    		taskContainer.addContainerProperty("endTime", Date.class, null);
+    		taskContainer.addContainerProperty("taskFile", String.class, null);
+
+    		List<Job> jobs = user.getJobs();
+    		int i = 0;
+    		for(Job job : jobs){
+    			List<Task> tasks = job.getTasks();
+    			for(Task task : tasks){
+    				Item item = taskContainer.addItem(++i);
+    				item.getItemProperty("id").setValue(task.getId());
+    	        	item.getItemProperty("taskName").setValue(task.getTaskName());
+    	        	item.getItemProperty("status").setValue(task.getTaskStatus());
+    	        	item.getItemProperty("startTime").setValue(task.getStartTime());
+    	        	item.getItemProperty("endTime").setValue(task.getEndTime());
+    	        	item.getItemProperty("taskFile").setValue(task.getTaskFile());
+    			}
+    		}
+    }
+    
+    public int getReports(){
+    	if(taskContainer != null){
+    		return taskContainer.getItemIds().size();
+    	}
+    	
+    	return 0;
+    }
+    
+    public void initUserInfo(User user){
+    	this.user = user;
+    }
+    
+    public boolean isFlag() {
+		return flag;
+	}
+
+	public void setFlag(boolean flag) {
+		this.flag = flag;
+	}
 	
 	@Override
 	public void enter(ViewChangeEvent event) {
 		// TODO Auto-generated method stub
 		//EntityManager em = Persistence.createEntityManagerFactory("reportengine").createEntityManager();
     	//em.getEntityManagerFactory().getCache().evict(Task.class);
+		
+		//List<Job> jobs = user.getJobs();
+		
+		/*if(jobs != null){
+			for(Job job : jobs){
+				List<Task> tasks = job.getTasks();
+				if(tasks != null){
+					for(Task task : tasks){
+						
+						System.out.println("taskid = "+task.getId());
+					}
+				}
+			}
+		}*/
 		
 	}
 	

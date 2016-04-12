@@ -1,16 +1,17 @@
 package com.rex.backend.entity;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
@@ -59,7 +60,7 @@ public class Job {
 	
 	@Column(name = "JOB_NXT")
 	@Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date nextExecTime;
+    private java.util.Date nextExecution;
 
 	@Column(name = "JOB_QTM")
     private int jobQtm;
@@ -69,6 +70,17 @@ public class Job {
 	
 	@Column(name = "JOB_MLBDY")
     private String mailBody = "";
+	
+	@Column(name = "JOB_ISSUER")
+    private String issuer = "";
+	
+	@Column(name = "JOB_ISSUETIME")
+	@Temporal(TemporalType.TIMESTAMP)
+    private Date issueTime;
+	
+	@OneToMany()
+    @JoinTable(name = "TASK",joinColumns = @JoinColumn(name = "TASK_JOBID", referencedColumnName="JOB_ID"), inverseJoinColumns = @JoinColumn(name = "TASK_ID", unique=true))
+    private List<Task> tasks = new ArrayList<>();
 
 	public Job(){
 		this.id = UUID.randomUUID().toString();
@@ -142,12 +154,12 @@ public class Job {
 		this.flag = flag;
 	}
 	
-	public java.util.Date getNextExecTime() {
-		return nextExecTime;
+	public java.util.Date getNextExecution() {
+		return nextExecution;
 	}
 
-	public void setNextExecTime(java.util.Date nextExecTime) {
-		this.nextExecTime = nextExecTime;
+	public void setNextExecution(java.util.Date nextExecution) {
+		this.nextExecution = nextExecution;
 	}
 	
 	public int getJobQtm() {
@@ -172,6 +184,30 @@ public class Job {
 
 	public void setMailBody(String mailBody) {
 		this.mailBody = mailBody;
+	}
+	
+	public String getIssuer() {
+		return issuer;
+	}
+
+	public void setIssuer(String issuer) {
+		this.issuer = issuer;
+	}
+
+	public Date getIssueTime() {
+		return issueTime;
+	}
+
+	public void setIssueTime(Date issueTime) {
+		this.issueTime = issueTime;
+	}
+	
+	public List<Task> getTasks() {
+		return tasks;
+	}
+
+	public void setTasks(List<Task> tasks) {
+		this.tasks = tasks;
 	}
 
 	@Override

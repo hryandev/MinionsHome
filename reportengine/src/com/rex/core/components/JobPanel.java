@@ -1,5 +1,7 @@
 package com.rex.core.components;
 
+import java.util.Date;
+
 import com.rex.backend.entity.Job;
 import com.rex.components.valo.Icons;
 import com.rex.core.forms.JobForm;
@@ -228,8 +230,7 @@ public class JobPanel extends Panel{
 		job.setMailSubject(mailForm.getMailSubject().getValue());
 		job.setMailBody(mailForm.getMailBody().getValue());
 		
-		job.setFlag("N");
-        job.setJobQtm(120);
+		job.setIssueTime(new Date());
 	}
 	
 	public void saveUserGroup(){

@@ -1,5 +1,6 @@
 package com.rex.core.views;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,12 +9,12 @@ import java.util.Map.Entry;
 import com.rex.backend.entity.User;
 import com.rex.components.valo.Icons;
 import com.rex.components.valo.ValoMenuLayout;
-import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.event.UIEvents;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FileResource;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.Resource;
@@ -29,7 +30,6 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -58,6 +58,10 @@ public class MainView extends ValoMenuLayout implements View{
     private int reportCount = 0;
     private int taskCount = 0;
     
+    private Resource photo = null;
+    private final String photoRootPath = "\\\\163.50.48.12\\Photo\\";
+    private final String DEFAULT_PHOTO = "../tests-valo/img/profile-pic-300px.jpg";
+    
     private String userName = "Mr. Murata";
     private User user = null;
     
@@ -70,12 +74,22 @@ public class MainView extends ValoMenuLayout implements View{
 		
 		if(user != null){
 			userName = user.getPrenom() + " " + user.getNom();
+			String photoPath = photoRootPath + user.getId() + "-1.JPG";
+			File file = new File(photoPath);
+			photo = new FileResource(file);
+		}else{
+			photo = new ThemeResource(DEFAULT_PHOTO);
 		}
 		
 		initViewMap();
 		initComponents();
 		addMenu(buildMenu());
 		initNavigator();
+		
+		//reportView.initUserInfo(user);
+		//reportView.initReport();
+		//reportView.initTaskList();
+		
 	}
 	
 	public void initViewMap(){
@@ -138,7 +152,7 @@ public class MainView extends ValoMenuLayout implements View{
         settings = new MenuBar();
         settings.addStyleName("user-menu");
         settingsItem = settings.addItem(userName,
-                new ThemeResource("../tests-valo/img/profile-pic-300px.jpg"),
+        		photo,
                 null);
         settingsItem.addItem("Edit Profile", null);
         settingsItem.addItem("Preferences", null);
@@ -293,13 +307,13 @@ public class MainView extends ValoMenuLayout implements View{
                 	//f = f.substring(5);
                 	
 	                if("task".equals(event.getParameters())){
-	                	taskCount = taskView.getTaskCount();
+	                	//taskCount = taskView.getTaskCount();
+	                	//Button taskBtn = (Button)menuItemsLayout.getComponent(3);
+	                	//String caption = "Task <span class=\"valo-menu-badge\">"+taskCount+"</span>";
+	                	//taskBtn.setCaption(caption);
+	                	//menuItemsLayout.getComponent(3).setCaption(caption);
 	                	
-	                	Button taskBtn = (Button)menuItemsLayout.getComponent(3);
-	                	
-	                	String caption = "Task <span class=\"valo-menu-badge\">"+taskCount+"</span>";
-	                	
-	                	taskBtn.setCaption(caption);
+	                	refreshTaskCaption();
 	                	
 	                	UI.getCurrent().setPollInterval(50000);
 	                	UI.getCurrent().addPollListener(new UIEvents.PollListener() {
@@ -309,9 +323,27 @@ public class MainView extends ValoMenuLayout implements View{
 	                        	
 	                        	Page.getCurrent().reload();
 	                        	
-	                        	taskBtn.setCaption(caption);
+	                        	//taskBtn.setCaption(caption);
+	                        	//menuItemsLayout.getComponent(3).setCaption(caption);
+	                        	
+	                        	refreshTaskCaption();
 	                        }
 	                    });
+	                }else if("report".equals(event.getParameters())){
+	                	refreshReportCaption();
+	                	
+	                	UI.getCurrent().setPollInterval(50000);
+	                	UI.getCurrent().addPollListener(new UIEvents.PollListener() {
+	                        @Override
+	                        public void poll(UIEvents.PollEvent event) {
+	                            //log.debug("Polling");
+	                        	
+	                        	Page.getCurrent().reload();
+	                        	
+	                        	refreshReportCaption();
+	                        }
+	                    });
+	                	
 	                }else{
 	                	UI.getCurrent().setPollInterval(-1);
 	                }
@@ -347,16 +379,47 @@ public class MainView extends ValoMenuLayout implements View{
 		
 	}
 	
+	public void refreshReportCaption(){
+		reportCount = reportView.getReports();
+    	String caption = "Report <span class=\"valo-menu-badge\">"+reportCount+"</span>";
+    	menuItemsLayout.getComponent(0).setCaption(caption);
+	}
+	
+	public void refreshTaskCaption(){
+		taskCount = taskView.getTaskCount();
+		String caption = "Task <span class=\"valo-menu-badge\">"+taskCount+"</span>";
+		menuItemsLayout.getComponent(3).setCaption(caption);
+	}
+	
 	@Override
 	public void enter(ViewChangeEvent event) {
 		// TODO Auto-generated method stub
-		boolean isLoggedIn = UI.getCurrent().getSession().getAttribute("user") != null;
 		user = (User) UI.getCurrent().getSession().getAttribute("user");
-		
+		boolean isLoggedIn = user != null;
 		
 		if(isLoggedIn && "".equals(event.getParameters())){
-			Notification.show("Hi, " + user.getPrenom() + " " + user.getNom() + ".\nWelcome to Report EngineXcel");
+			String photoPath = photoRootPath + user.getId() + "-1.JPG";
+			File file = new File(photoPath);
+			
 			settingsItem.setText(user.getPrenom() + " " + user.getNom());
+			
+			if(file.exists()){
+				settingsItem.setIcon(new FileResource(file));
+			}else{
+				settingsItem.setIcon(new ThemeResource(DEFAULT_PHOTO));
+			}
+			
+		}
+		
+		if(isLoggedIn){
+			reportView.initUserInfo(user);
+			
+			if(!reportView.isFlag()){
+				reportView.initReport();
+				reportView.initTaskList();
+			}
+			
+			refreshReportCaption();
 		}
 
 		if (event.getParameters() == null || event.getParameters().isEmpty()) {
@@ -370,6 +433,7 @@ public class MainView extends ValoMenuLayout implements View{
 			String viewName = event.getParameters();
 			
 			contentArea.addComponent((Component) viewMap.get(viewName));
+			viewMap.get(viewName).enter(event);
 		}
 
 	}

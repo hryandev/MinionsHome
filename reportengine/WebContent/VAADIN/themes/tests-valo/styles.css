@@ -1576,12 +1576,12 @@ div.v-layout.v-horizontal.v-widget {
 	z-index: 100;
 	top: 45%;
 	left: 50%;
-	width: 50px;
-	height: 50px;
+	width: 28px;
+	height: 28px;
 	padding: 9px;
 	margin-top: -24px;
 	margin-left: -24px;
-	background: #fff url(../custom/gif/circle.gif) no-repeat 50%;
+	background: #fff url(../valo/shared/img/spinner.gif) no-repeat 50%;
 	border-radius: 4px;
 }
 
@@ -1593,7 +1593,7 @@ div.v-layout.v-horizontal.v-widget {
 	text-align: center;
 	left: 0;
 	right: 0;
-	content: "";
+	content: "Fetching data";
 }
 
 .tests-valo .v-loading-indicator {

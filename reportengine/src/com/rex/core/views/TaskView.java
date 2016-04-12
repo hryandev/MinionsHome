@@ -67,7 +67,7 @@ public class TaskView extends HorizontalLayout implements View{
 		configureComponents();
     }
     
-    private void configureComponents() {
+    public void configureComponents() {
     	tasksList = new Table() {
 
             @Override

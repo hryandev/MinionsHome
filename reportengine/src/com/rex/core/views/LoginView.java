@@ -167,12 +167,20 @@ public class LoginView extends VerticalLayout implements View,
             
             //ReportEngineUI.configAfterSuccess();
             
+            Notification.show("Hi, " + userBean.getPrenom() + " " + userBean.getNom() + ".\nWelcome to Report EngineXcel");
+            
             // Navigate to main view
             getUI().getNavigator().navigateTo(MainView.NAME);
 
         } else {
-
             // Wrong password clear the password field and refocuses it
+        	String error = "Wrong password";
+        	
+        	Notification notification = new Notification("Error", error,
+                    Type.ERROR_MESSAGE, true);
+
+            notification.show(Page.getCurrent());
+        	
             this.password.setValue(null);
             this.password.focus();
 
