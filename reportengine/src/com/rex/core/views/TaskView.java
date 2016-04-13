@@ -149,16 +149,23 @@ public class TaskView extends HorizontalLayout implements View{
             	
                 String url = (String) source.getItem(itemId).getItemProperty("taskFile").getValue();
                 
-                int col = url.indexOf(SAVE_FOLDER);
+                Link link = new Link(null, null);
                 
-                url = url.substring(col);
-                //url = url.substring(7);
-                String svrPath = ACCESS_PATH + url;
+                if(url != null && !url.isEmpty()){
                 
-                File file = new File(svrPath);
+	                int col = url.indexOf(SAVE_FOLDER);
+	                
+	                url = url.substring(col);
+	                //url = url.substring(7);
+	                String svrPath = ACCESS_PATH + url;
+	                File file = new File(svrPath);
+	                
+	                if(file.exists()){
+		                link = new Link(null, new FileResource(file));
+		                link.setIcon(new Icons("file-excel").get());
+	                }
                 
-                Link link = new Link(null, new FileResource(file));
-                link.setIcon(new Icons("file-excel").get());
+                }
                 
                 //Button link = new Button();
                 //link.setStyleName(Runo.BUTTON_LINK); // use the theme you are currently extending here

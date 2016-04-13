@@ -63,6 +63,7 @@ public class ReportView extends HorizontalLayout implements View{
     
     private final String SAVE_FOLDER = "ExcelModule";
     private final String ACCESS_PATH = "\\\\163.50.47.14\\rex\\";
+    private final String LOCAL_ACCESS = "D:\\REX\\";
 
     public ReportView(){
     	//initReport();
@@ -182,16 +183,25 @@ public class ReportView extends HorizontalLayout implements View{
             	
                 String url = (String) source.getItem(itemId).getItemProperty("taskFile").getValue();
                 
-                int col = url.indexOf(SAVE_FOLDER);
+                Link link = new Link(null, null);
                 
-                url = url.substring(col);
-                //url = url.substring(7);
-                String svrPath = ACCESS_PATH + url;
+                if(url != null && !url.isEmpty()){
                 
-                File file = new File(svrPath);
-                
-                Link link = new Link(null, new FileResource(file));
-                link.setIcon(FontAwesome.FILE_EXCEL_O);
+	                int col = url.indexOf(SAVE_FOLDER);
+	                
+	                url = url.substring(col);
+	                //url = url.substring(7);
+	                //String svrPath = ACCESS_PATH + url;
+	                String svrPath = LOCAL_ACCESS + url;
+	                
+	                File file = new File(svrPath);
+	                
+	                if(file.exists()){
+	                
+		                link = new Link(null, new FileResource(file));
+		                link.setIcon(FontAwesome.FILE_EXCEL_O);
+	                }
+                }
                 
                 return link;
             }

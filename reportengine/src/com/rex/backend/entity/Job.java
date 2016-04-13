@@ -71,10 +71,10 @@ public class Job {
 	@Column(name = "JOB_MLBDY")
     private String mailBody = "";
 	
-	@Column(name = "JOB_ISSUER")
+	@Column(name = "JOB_ISR")
     private String issuer = "";
 	
-	@Column(name = "JOB_ISSUETIME")
+	@Column(name = "JOB_IST")
 	@Temporal(TemporalType.TIMESTAMP)
     private Date issueTime;
 	

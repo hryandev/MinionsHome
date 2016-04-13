@@ -46,7 +46,7 @@ public class MainView extends ValoMenuLayout implements View{
 
 	public static final String NAME = "main";
 	
-	public static final LinkedHashMap<String, View> viewMap = new LinkedHashMap<>();
+	public LinkedHashMap<String, View> viewMap = new LinkedHashMap<>();
 	private Map<String, String> menuItems = new LinkedHashMap<String, String>();
 	private Map<String, Resource> iconMap = new LinkedHashMap<>();
 	
@@ -59,7 +59,8 @@ public class MainView extends ValoMenuLayout implements View{
     private int taskCount = 0;
     
     private Resource photo = null;
-    private final String photoRootPath = "\\\\163.50.48.12\\Photo\\";
+    //private final String photoRootPath = "\\\\163.50.48.12\\Photo\\";
+    private final String photoRootPath = "C:\\Users\\Ryan\\Documents\\Photo\\";
     private final String DEFAULT_PHOTO = "../tests-valo/img/profile-pic-300px.jpg";
     
     private String userName = "Mr. Murata";
