@@ -206,6 +206,7 @@ public class JobView extends HorizontalLayout implements View{
         container.addContainerProperty("id", String.class, null);
     	container.addContainerProperty("freqName", String.class, null);
         container.addContainerProperty("freqDesc", String.class, null);
+        container.addContainerProperty("startTime", Date.class, null);
         
         rightPanel.getJobForm().freqTable.update(container);
     	

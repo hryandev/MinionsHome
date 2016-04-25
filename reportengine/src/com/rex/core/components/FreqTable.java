@@ -1,10 +1,16 @@
 package com.rex.core.components;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Locale;
 
 import com.rex.backend.entity.Freq;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.data.util.converter.StringToDateConverter;
+import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.Column;
@@ -121,11 +127,35 @@ public class FreqTable extends VerticalLayout{
 		removeComponent(freqList);
 		freqList = new Grid();
 		freqList.setContainerDataSource(container);
+		
 		configure();
+		convertStartTime();
 		
 		freqList.removeColumn("id");
+		freqList.removeColumn("freqDesc");
 		addComponent(freqList);
         
+	}
+	
+	public void convertStartTime(){
+		freqList.getColumn("startTime").setConverter(new StringToDateConverter() {
+	    	   
+	    	   @Override
+	    	   public String convertToPresentation(Date value, Class<? extends String> targetType, Locale locale){
+	    		   if (targetType != getPresentationType()) {
+	    	            throw new ConversionException("Converter only supports " + getPresentationType().getName() + " (targetType was " + targetType.getName() + ")");
+	    	        }
+
+	    	        if (null == value){
+	    	        	return "IMMEDIATELY";
+	    	        }
+	    			
+	    	        Timestamp ts = new Timestamp(value.getTime());
+	    	        
+	    	        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(ts);
+	    	   }
+
+	       });
 	}
 	
 	public void deleteSelectedFreq(){

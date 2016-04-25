@@ -1,11 +1,9 @@
 package com.rex.backend.service;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
 import com.rex.backend.entity.Freq;
@@ -36,7 +34,27 @@ public class FreqService {
 		Freq freq = em.find(Freq.class, freqid);
 		
 		em.getTransaction().begin();
+		//freq.setStartTime(sTime);
+		em.getTransaction().commit();
+		
+		return;
+	}
+	
+	public void updateFreqStartTime(String freqid, Date sTime){
+		Freq freq = em.find(Freq.class, freqid);
+		
+		em.getTransaction().begin();
 		freq.setStartTime(sTime);
+		em.getTransaction().commit();
+		
+		return;
+	}
+	
+	public void updateFreqRepeat(String freqid, int repeat){
+		Freq freq = em.find(Freq.class, freqid);
+		
+		em.getTransaction().begin();
+		freq.setRepeat(repeat);
 		em.getTransaction().commit();
 		
 		return;

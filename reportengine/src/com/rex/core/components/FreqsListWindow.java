@@ -2,20 +2,24 @@ package com.rex.core.components;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 
 import com.rex.backend.entity.Freq;
 import com.rex.backend.entity.Job;
 import com.rex.core.ReportEngineUI;
-import com.rex.core.forms.JobForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
-import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.IndexedContainer;
-import com.vaadin.data.util.filter.Not;
-import com.vaadin.data.util.filter.SimpleStringFilter;
+import com.vaadin.data.util.converter.StringToDateConverter;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Component;
@@ -36,12 +40,12 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
 	private Grid freqsList;
 	
 	private JPAContainer<Freq> freqs;
+	private IndexedContainer freqList;
 	IndexedContainer orgContainer;
     private Button saveButton;
     private Button cancelButton;
     
-    //JobForm form;
-
+    private LinkedList<Freq> remainder = new LinkedList<>();
     
     public FreqsListWindow() {
     	freqs = JPAContainerFactory.make(Freq.class,
@@ -57,6 +61,7 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     	
     	this.freqTable = freqTable;
     	orgContainer = freqTable.getRevisedContainer();
+    	initFreqList();
     	configureComponents();
         buildLayout();
     }
@@ -79,7 +84,7 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     	
     	//System.out.println("container="+container.size());
     	
-    	for(int i = 0; i < orgContainer.size(); i++){
+    	/*for(int i = 0; i < orgContainer.size(); i++){
     		Item item = orgContainer.getItem(i+1);
     		Property<String> freqID = item.getItemProperty("id");
     		
@@ -87,19 +92,38 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     		
     		Filter filter = new Not(new SimpleStringFilter("id", freqID.getValue(), true, false));
     		freqs.addContainerFilter(filter);
-    	}
+    	}*/
     	
-    	freqsList.setContainerDataSource(freqs);
+    	freqsList.setContainerDataSource(freqList);
     	
-    	freqsList.setColumnOrder("freqName", "freqDesc");
+    	freqsList.setColumnOrder("freqName", "startTime");
+    	
+    	freqsList.getColumn("startTime").setConverter(new StringToDateConverter() {
+     	   
+     	   @Override
+     	   public String convertToPresentation(Date value, Class<? extends String> targetType, Locale locale){
+     		   if (targetType != getPresentationType()) {
+     	            throw new ConversionException("Converter only supports " + getPresentationType().getName() + " (targetType was " + targetType.getName() + ")");
+     	        }
+
+     	        if (null == value){
+     	        	return "IMMEDIATELY";
+     	        }
+     			
+     	        Timestamp ts = new Timestamp(value.getTime());
+     	        
+     	        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(ts);
+     	   }
+
+        });
     	
     	freqsList.removeColumn("id");
     	freqsList.removeColumn("freqDesc");
-    	freqsList.removeColumn("freqType");
+    	//freqsList.removeColumn("freqType");
     	
-    	freqsList.removeColumn("interval");
-    	freqsList.removeColumn("repeat");
-    	freqsList.removeColumn("jobList");
+    	//freqsList.removeColumn("interval");
+    	//freqsList.removeColumn("repeat");
+    	//freqsList.removeColumn("jobList");
         
         
         
@@ -203,32 +227,75 @@ public class FreqsListWindow extends Window implements Button.ClickListener{
     }
     
     public IndexedContainer getFreqList(){
-    	/*IndexedContainer container = new IndexedContainer();
-    	container.addContainerProperty("id", String.class, null);
-    	container.addContainerProperty("freqName", String.class, null);
-        container.addContainerProperty("freqDesc", String.class, null);*/
-    	
-    	//List<Freq> selected = new ArrayList<Freq>();
-    	
-    	int j = orgContainer.size();
-    	for(Object o : freqsList.getSelectedRows()){
-    		Freq freq = freqs.getItem(o).getEntity();
-    		Item item = orgContainer.addItem(j+1);
-    		item.getItemProperty("id").setValue(freq.getId());
-        	item.getItemProperty("freqName").setValue(freq.getFreqName());
-        	item.getItemProperty("freqDesc").setValue(freq.getFreqDesc());
+    	IndexedContainer container = new IndexedContainer();
+		container.addContainerProperty("id", String.class, null);
+		container.addContainerProperty("freqName", String.class, null);
+        container.addContainerProperty("freqDesc", String.class, null);
+        container.addContainerProperty("startTime", Date.class, null);
+        
+    	int j= 0;
+    	for(Object o : freqsList.getSelectedRows()){ 
+    		Item freq = freqList.getItem(o);
+    		Item item = container.addItem(++j);
     		
-        	j++;
-    		//selected.add(freq);
+    		item.getItemProperty("id").setValue(freq.getItemProperty("id").getValue());
+        	item.getItemProperty("freqName").setValue(freq.getItemProperty("freqName").getValue());
+        	item.getItemProperty("freqDesc").setValue(freq.getItemProperty("freqDesc").getValue());
+        	item.getItemProperty("startTime").setValue(freq.getItemProperty("startTime").getValue());
+    		
     	}
     	
-    	return orgContainer;
+    	for(Freq freq : remainder){
+    		Item it = container.addItem(++j);
+    		
+    		it.getItemProperty("id").setValue(freq.getId());
+    		it.getItemProperty("freqName").setValue(freq.getFreqName());
+    		it.getItemProperty("freqDesc").setValue(freq.getFreqDesc());
+    		it.getItemProperty("startTime").setValue(freq.getStartTime());
+    	}
     	
-    	//List<Object> lists = new ArrayList<Object>(freqsList.getSelectedRows());
-    	//List<Freq> object = new ArrayList<Freq>();
-    	//lists = (List) object;
-    	//return (List<T>) lists;
+    	return container;
+    	
     }
+    
+	public void initFreqList() {
+		freqList = new IndexedContainer();
+		freqList.addContainerProperty("id", String.class, null);
+		freqList.addContainerProperty("freqName", String.class, null);
+		freqList.addContainerProperty("freqDesc", String.class, null);
+		freqList.addContainerProperty("startTime", Date.class, null);
+		
+		List<String> freqOrgList = new LinkedList<>();
+		if(orgContainer.size() != 0){
+			//for(int j = 0; j < orgContainer.size(); j++){
+			for (Iterator i = orgContainer.getItemIds().iterator(); i.hasNext();) {
+				int iid = (int) i.next();
+				Item orgItem = orgContainer.getItem(iid);
+				
+				if(null != orgItem){
+					Property<String> freqID = orgItem.getItemProperty("id");
+					freqOrgList.add(freqID.getValue());
+				}
+			}
+		}
+		
+		int i = 0;
+		for (Object o : freqs.getItemIds()) {
+			Freq freq = freqs.getItem(o).getEntity();
+			
+			if (!freqOrgList.contains(freq.getId())) {
+				Item item = freqList.addItem(++i);
+				item.getItemProperty("id").setValue(freq.getId());
+				item.getItemProperty("freqName").setValue(freq.getFreqName());
+				item.getItemProperty("freqDesc").setValue(freq.getFreqDesc());
+				item.getItemProperty("startTime").setValue(freq.getStartTime());
+			}else{
+				remainder.add(freq);
+			}
+
+		}
+	}
+
     
     // Iterate over the item identifiers of the table.
     /*for (Iterator i = table.getItemIds().iterator(); i.hasNext();) {

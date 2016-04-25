@@ -59,8 +59,8 @@ public class MainView extends ValoMenuLayout implements View{
     private int taskCount = 0;
     
     private Resource photo = null;
-    //private final String photoRootPath = "\\\\163.50.48.12\\Photo\\";
-    private final String photoRootPath = "C:\\Users\\Ryan\\Documents\\Photo\\";
+    private final String photoRootPath = "\\\\163.50.48.12\\Photo\\";
+    //private final String photoRootPath = "C:\\Users\\Ryan\\Documents\\Photo\\";
     private final String DEFAULT_PHOTO = "../tests-valo/img/profile-pic-300px.jpg";
     
     private String userName = "Mr. Murata";

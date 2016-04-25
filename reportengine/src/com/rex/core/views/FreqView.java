@@ -7,11 +7,13 @@ import java.util.Locale;
 
 import com.rex.backend.entity.Freq;
 import com.rex.core.ReportEngineUI;
+import com.rex.core.components.DateToStringConverter;
 import com.rex.core.forms.FreqForm;
 import com.vaadin.addon.jpacontainer.JPAContainer;
 import com.vaadin.addon.jpacontainer.JPAContainerFactory;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
+import com.vaadin.data.Property;
 import com.vaadin.data.util.converter.StringToDateConverter;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.filter.Like;
@@ -41,6 +43,8 @@ public class FreqView extends HorizontalLayout implements View{
 	
 	TextField filter = new TextField();
     public Grid freqList = new Grid();
+    private final String FIRE_STR = "IMMEDIATELY";
+    private String EXECUTE_STR = "";
     //public Table freqList = new Table();
     Button newContact = new Button();
 
@@ -65,17 +69,27 @@ public class FreqView extends HorizontalLayout implements View{
        filter.setInputPrompt("Filter frequency...");
        filter.addTextChangeListener(e -> updateFilters(e.getText()));
        
-       /*for(Object o : freq.getItemIds()){
-    	   Item item = freq.getItem(o);
-    	   if(item != null){
-    		   String sTime = (String)item.getItemProperty("startTime").getValue();
-    		   
-    		   if("".equals(sTime) || sTime == null) item.getItemProperty("startTime").setValue("Execute immediately");
-    	   }
-       }*/
-       
-       
        freqList.setContainerDataSource(freq);
+       //initFireTimeString();
+       
+       freqList.getColumn("startTime").setConverter(new StringToDateConverter() {
+    	   
+    	   @Override
+    	   public String convertToPresentation(Date value, Class<? extends String> targetType, Locale locale){
+    		   if (targetType != getPresentationType()) {
+    	            throw new ConversionException("Converter only supports " + getPresentationType().getName() + " (targetType was " + targetType.getName() + ")");
+    	        }
+
+    	        if (null == value){
+    	        	return FIRE_STR;
+    	        }
+    			
+    	        Timestamp ts = new Timestamp(value.getTime());
+    	        
+    	        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(ts);
+    	   }
+
+       });
        
        freqList.setColumnOrder("freqName", "startTime");
        
@@ -84,8 +98,6 @@ public class FreqView extends HorizontalLayout implements View{
        freqList.removeColumn("id");
        freqList.removeColumn("freqDesc");
        freqList.removeColumn("freqType");
-       
-       
        freqList.removeColumn("interval");
        freqList.removeColumn("repeat");
        freqList.removeColumn("jobList");
@@ -177,6 +189,17 @@ public class FreqView extends HorizontalLayout implements View{
     
     public Grid getFreqList(){
     	return freqList;
+    }
+    
+    public void initFireTimeString(){
+    	for(Object o : freq.getItemIds()){
+     	   Property<String> ft = freq.getContainerProperty(o, "startTime");
+     	   if(EXECUTE_STR.equals(ft.getValue())){
+     		  freq.getContainerProperty(o, "fireTime").setValue(FIRE_STR);
+     	   }else{
+     		  freq.getContainerProperty(o, "fireTime").setValue(ft.getValue()); 
+     	   }
+        }
     }
 
 	@Override

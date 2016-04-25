@@ -59,7 +59,7 @@ public class FreqForm extends FormLayout {
     TextField freqName = new TextField("Name");
     TextField freqDesc = new TextField("Description");
     ComboBox freqType = new ComboBox("Type");
-    CheckBox execute = new CheckBox("Execute now");
+    CheckBox execute = new CheckBox("Repeat forever", false);
     //Component startTimeString;
     DateField startTime = new DateField();
     
@@ -75,7 +75,7 @@ public class FreqForm extends FormLayout {
     List<Job> delList = null;
 	List<Job> addList = null;
     
-	private final String EXECUTE_STR = "EXEC NOW";
+	private final String EXECUTE_STR = "";
 	
     private Freq freq;
     private FreqView freqView;
@@ -129,7 +129,8 @@ public class FreqForm extends FormLayout {
     	
     	executeOption.setImmediate(true);
     	
-    	//execute.addValueChangeListener(event -> startTime.setEnabled(execute.getValue()));
+    	execute.addValueChangeListener(event -> repeat.setVisible(!execute.getValue()));
+    	execute.setImmediate(true);
     	
     	configureStartTimeField(startTime);
     	
@@ -169,7 +170,7 @@ public class FreqForm extends FormLayout {
         caption.addStyleName("h3");
         caption.addStyleName("colored");
         
-		addComponents(toolbar, freqName, freqDesc, freqType, executeOption, startTime, interval, repeat, caption, jobTable);
+		addComponents(toolbar, freqName, freqDesc, freqType, executeOption, startTime, interval, execute, repeat, caption, jobTable);
 		
 		setSizeFull();
 		setSpacing(true);
@@ -214,13 +215,16 @@ public class FreqForm extends FormLayout {
         executeOption.setValue("Execute now");
         repeat.setValue(0);
         
-        this.freq.setFreqType("s");
+        this.freq.setFreqType("h");
         //this.freq.setStartTime(null);
         
         IndexedContainer container = new IndexedContainer();
         container.addContainerProperty("id", String.class, null);
     	container.addContainerProperty("jobName", String.class, null);
         container.addContainerProperty("jobDesc", String.class, null);
+        container.addContainerProperty("issuer", String.class, null);
+        container.addContainerProperty("issueTime", Date.class, null);
+        
         jobTable.update(container);
     	
         if(this.freq != null) {
@@ -241,21 +245,28 @@ public class FreqForm extends FormLayout {
 			this.freq = freqView.getFreq().getItem(item).getEntity();
 			freqView.getFreqPanel().setCaption("Freq - " + freqItem.getItemProperty("freqName").getValue());
 			
-			if(!EXECUTE_STR.equals(this.freq.getStartTime())){
-			//if(this.freq.getStartTime() != null){
+			//if(!EXECUTE_STR.equals(this.freq.getStartTime())){
+			if(this.freq.getStartTime() != null){
 				executeOption.setValue("Specific Time");
 				
 				DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 				try {
-					startTime.setValue(df.parse(this.freq.getStartTime()));
+					startTime.setValue(this.freq.getStartTime());
 					startTime.setDateFormat("yyyy/MM/dd hh:mm:ss a");
 					//startTime.setValue(null);
-				} catch (ReadOnlyException | ConversionException | ParseException e) {
+				} catch (ReadOnlyException | ConversionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}else{
 				executeOption.setValue("Execute now");
+			}
+			
+			if(Integer.MAX_VALUE == this.freq.getRepeat()){
+				execute.setValue(true);
+			}else{
+				execute.setValue(false);
+				repeat.setValue(this.freq.getRepeat());
 			}
 			
 			jobTable.setOrgContainer(getJob(freqid));
@@ -270,7 +281,7 @@ public class FreqForm extends FormLayout {
 			binder.bind(freqType, "freqType");
 			//binder.bind(startTime, "startTime");
 			binder.bind(interval, "interval");
-			binder.bind(repeat, "repeat");
+			//binder.bind(repeat, "repeat");
 
 			freqName.focus();
 			
@@ -284,6 +295,9 @@ public class FreqForm extends FormLayout {
     	container.addContainerProperty("id", String.class, null);
     	container.addContainerProperty("jobName", String.class, null);
         container.addContainerProperty("jobDesc", String.class, null);
+        container.addContainerProperty("issuer", String.class, null);
+        container.addContainerProperty("issueTime", Date.class, null);
+        
         
         EntityManager em = Persistence.createEntityManagerFactory("reportengine").createEntityManager();
 
@@ -299,6 +313,9 @@ public class FreqForm extends FormLayout {
 	        	item.getItemProperty("id").setValue(_freq.getJobList().get(i-1).getId());
 	        	item.getItemProperty("jobName").setValue(_freq.getJobList().get(i-1).getJobName());
 	        	item.getItemProperty("jobDesc").setValue(_freq.getJobList().get(i-1).getJobDesc());
+	        	item.getItemProperty("issuer").setValue(_freq.getJobList().get(i-1).getIssuer());
+	        	item.getItemProperty("issueTime").setValue(_freq.getJobList().get(i-1).getIssueTime());
+	        	
 	        }
         }
         
@@ -310,7 +327,7 @@ public class FreqForm extends FormLayout {
     }
     
     public void initFreqTypes(){
-    	types.put("s", "Secondly");
+    	//types.put("s", "Secondly");
     	types.put("m", "Minutely");
     	types.put("h", "Hourly");
     	types.put("D", "Daily");
@@ -326,7 +343,7 @@ public class FreqForm extends FormLayout {
             .setValue(types.get(identifier));
     	}
     	
-    	freqType.select("s");
+    	freqType.select("h");
     }
     
     
@@ -351,26 +368,37 @@ public class FreqForm extends FormLayout {
     	freq.setFreqDesc(freqDesc.getValue());
     	freq.setFreqType(freqType.getValue().toString());
     	freq.setInterval(Integer.parseInt(interval.getValue().toString()));
-    	freq.setRepeat(Integer.parseInt(repeat.getValue().toString()));
     }
     
     public void saveFreq(){
     	DateFormat db = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     	Timestamp ts;
     	
-    	String sTime;
+    	//String sTime;
+    	Date sTime;
+    	
+    	int rpt = 0;
     	
     	if (executeOption.getValue().equals("Execute now")) {
-    		sTime = EXECUTE_STR;
+    		//sTime = EXECUTE_STR;
+    		sTime = null;
     	}else{
-    		ts = new Timestamp(startTime.getValue().getTime());
-    		sTime = ts.toString();
+    		//ts = new Timestamp(startTime.getValue().getTime());
+    		//sTime = ts.toString();
+    		sTime = startTime.getValue();
+    	}
+    	
+    	if(execute.getValue()){
+			rpt = Integer.MAX_VALUE;
+    	}else{
+    		rpt = Integer.parseInt(repeat.getValue().toString());
     	}
     	
     	if(addFlag){
     		bindField(this.freq);
     		
             freq.setStartTime(sTime);
+            freq.setRepeat(rpt);
     		
     		freqView.getFreq().addEntity(freq);
     		freqView.getFreq().commit();
@@ -378,6 +406,7 @@ public class FreqForm extends FormLayout {
     	}
     	else{
     		updateFreqStartTime(sTime);
+    		updateFreqRepeat(rpt);
     		
     		try {
 				binder.commit();
@@ -393,6 +422,20 @@ public class FreqForm extends FormLayout {
     	FreqService fService = new FreqService(em);
     	
         fService.updateFreqStartTime(this.freq.getId(), sTime);
+    }
+    
+    public void updateFreqStartTime(Date sTime){
+    	EntityManager em = JPAContainerFactory.createEntityManagerForPersistenceUnit("reportengine");
+    	FreqService fService = new FreqService(em);
+    	
+        fService.updateFreqStartTime(this.freq.getId(), sTime);
+    }
+    
+    public void updateFreqRepeat(int repeat){
+    	EntityManager em = JPAContainerFactory.createEntityManagerForPersistenceUnit("reportengine");
+    	FreqService fService = new FreqService(em);
+    	
+        fService.updateFreqRepeat(this.freq.getId(), repeat);
     }
     
     public void saveJobs(){
@@ -440,6 +483,8 @@ public class FreqForm extends FormLayout {
     		job.setId((String)item.getItemProperty("id").getValue());
     		job.setJobName((String)item.getItemProperty("jobName").getValue());
     		job.setJobDesc((String)item.getItemProperty("jobDesc").getValue());
+    		job.setIssuer((String)item.getItemProperty("issuer").getValue());
+    		job.setIssueTime((Date)item.getItemProperty("issueTime").getValue());
     		
     		fList.add(job);
     	}
@@ -459,6 +504,8 @@ public class FreqForm extends FormLayout {
     		job.setId((String)item.getItemProperty("id").getValue());
     		job.setJobName((String)item.getItemProperty("jobName").getValue());
     		job.setJobDesc((String)item.getItemProperty("jobDesc").getValue());
+    		job.setIssuer((String)item.getItemProperty("issuer").getValue());
+    		job.setIssueTime((Date)item.getItemProperty("issueTime").getValue());
     		
     		fList.add(job);
     	}

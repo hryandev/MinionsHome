@@ -63,7 +63,7 @@ public class ReportView extends HorizontalLayout implements View{
     
     private final String SAVE_FOLDER = "ExcelModule";
     private final String ACCESS_PATH = "\\\\163.50.47.14\\rex\\";
-    private final String LOCAL_ACCESS = "D:\\REX\\";
+    //private final String ACCESS_PATH = "D:\\REX\\";
 
     public ReportView(){
     	//initReport();
@@ -191,8 +191,7 @@ public class ReportView extends HorizontalLayout implements View{
 	                
 	                url = url.substring(col);
 	                //url = url.substring(7);
-	                //String svrPath = ACCESS_PATH + url;
-	                String svrPath = LOCAL_ACCESS + url;
+	                String svrPath = ACCESS_PATH + url;
 	                
 	                File file = new File(svrPath);
 	                
@@ -222,13 +221,15 @@ public class ReportView extends HorizontalLayout implements View{
     		for(Job job : jobs){
     			List<Task> tasks = job.getTasks();
     			for(Task task : tasks){
-    				Item item = taskContainer.addItem(++i);
-    				item.getItemProperty("id").setValue(task.getId());
-    	        	item.getItemProperty("taskName").setValue(task.getTaskName());
-    	        	item.getItemProperty("status").setValue(task.getTaskStatus());
-    	        	item.getItemProperty("startTime").setValue(task.getStartTime());
-    	        	item.getItemProperty("endTime").setValue(task.getEndTime());
-    	        	item.getItemProperty("taskFile").setValue(task.getTaskFile());
+    				if("C".equals(task.getTaskStatus())){
+	    				Item item = taskContainer.addItem(++i);
+	    				item.getItemProperty("id").setValue(task.getId());
+	    	        	item.getItemProperty("taskName").setValue(task.getTaskName());
+	    	        	item.getItemProperty("status").setValue(task.getTaskStatus());
+	    	        	item.getItemProperty("startTime").setValue(task.getStartTime());
+	    	        	item.getItemProperty("endTime").setValue(task.getEndTime());
+	    	        	item.getItemProperty("taskFile").setValue(task.getTaskFile());
+    	        	}
     			}
     		}
     }

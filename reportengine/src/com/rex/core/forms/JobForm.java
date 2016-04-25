@@ -2,6 +2,7 @@ package com.rex.core.forms;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import com.rex.backend.entity.Freq;
@@ -16,7 +17,6 @@ import com.rex.core.components.SuggestingComboBox;
 import com.rex.core.components.SuggestingContainer;
 import com.rex.core.components.SuggestingTextField;
 import com.rex.core.views.JobView;
-import com.vaadin.addon.jpacontainer.EntityItem;
 import com.vaadin.annotations.Theme;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -202,6 +202,7 @@ public class JobForm extends FormLayout {
         container.addContainerProperty("id", String.class, null);
     	container.addContainerProperty("freqName", String.class, null);
         container.addContainerProperty("freqDesc", String.class, null);
+        container.addContainerProperty("startTime", Date.class, null);
         
         freqTable.update(container);
     	
@@ -270,6 +271,7 @@ public class JobForm extends FormLayout {
     	container.addContainerProperty("id", String.class, null);
     	container.addContainerProperty("freqName", String.class, null);
         container.addContainerProperty("freqDesc", String.class, null);
+        container.addContainerProperty("startTime", Date.class, null);
         
         //EntityManagerFactory emf = Persistence.createEntityManagerFactory("reportengine");
         //EntityManager em = emf.createEntityManager();
@@ -286,6 +288,7 @@ public class JobForm extends FormLayout {
 	        	item.getItemProperty("id").setValue(_job.getFreqs().get(i-1).getId());
 	        	item.getItemProperty("freqName").setValue(_job.getFreqs().get(i-1).getFreqName());
 	        	item.getItemProperty("freqDesc").setValue(_job.getFreqs().get(i-1).getFreqDesc());
+	        	item.getItemProperty("startTime").setValue(_job.getFreqs().get(i-1).getStartTime());
 	        }
         }
         
@@ -372,6 +375,7 @@ public class JobForm extends FormLayout {
     		freq.setId((String)item.getItemProperty("id").getValue());
     		freq.setFreqName((String)item.getItemProperty("freqName").getValue());
     		freq.setFreqDesc((String)item.getItemProperty("freqDesc").getValue());
+    		freq.setStartTime((Date)item.getItemProperty("startTime").getValue());
     		
     		fList.add(freq);
     	}
@@ -391,6 +395,7 @@ public class JobForm extends FormLayout {
     		freq.setId((String)item.getItemProperty("id").getValue());
     		freq.setFreqName((String)item.getItemProperty("freqName").getValue());
     		freq.setFreqDesc((String)item.getItemProperty("freqDesc").getValue());
+    		freq.setStartTime((Date)item.getItemProperty("startTime").getValue());
     		
     		fList.add(freq);
     	}
@@ -399,16 +404,6 @@ public class JobForm extends FormLayout {
     	
     }
     
-    public void saveUserGroup(){
-    	JobService jobService = new JobService();
-    	
-    	String jobid = job.getId();
-    	String userid = "ken.wang@murata.com";
-    	String tocc = "T";
-    	
-    	//jobService.saveUserGroup(jobid, userid, tocc);
-    	
-    }
 
 	public TextField getJobName() {
 		return jobName;

@@ -1,6 +1,7 @@
 package com.rex.backend.entity;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,9 +37,8 @@ public class Freq {
     private String freqType = "";
 	
 	@Column(name="FREQ_START")
-    //@Temporal(TemporalType.TIMESTAMP)
-    //private java.util.Date startTime;
-	private String startTime;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date startTime;
 	
 	@Column(name = "FREQ_INTVL")
     private int interval = 1;
@@ -89,14 +89,6 @@ public class Freq {
 		this.freqType = freqType;
 	}
 
-	public String getStartTime() {
-		return startTime;
-	}
-
-	public void setStartTime(String startTime) {
-		this.startTime = startTime;
-	}
-	
 	public int getInterval() {
 		return interval;
 	}
@@ -120,8 +112,15 @@ public class Freq {
 	public void setJobList(List<Job> jobList) {
 		this.jobList = jobList;
 	}
-	
-	
+
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
 	@Override
     public int hashCode() {
         HashCodeBuilder hcb = new HashCodeBuilder();

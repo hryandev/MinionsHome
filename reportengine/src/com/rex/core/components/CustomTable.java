@@ -78,10 +78,10 @@ public class CustomTable extends VerticalLayout{
 	public void removeSelectedObject(Collection<Object> oList){
 		
 		for(Object o : oList){
-			Item item = org_container.getItem(o);
-			if(item != null){
+			//Item item = org_container.getItem(o);
+			//if(item != null){
 				revised_container.removeItem(o);
-			}
+			//}
 		}
 		
 		update(revised_container);
@@ -96,6 +96,7 @@ public class CustomTable extends VerticalLayout{
 		gridList.setContainerDataSource(container);
 		
 		gridList.removeColumn("id");
+		gridList.removeColumn("issueTime");
 		addComponent(gridList);
         
 	}
