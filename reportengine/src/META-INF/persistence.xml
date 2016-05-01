@@ -22,24 +22,24 @@
 		</properties>
 	</persistence-unit>-->
 
-	<!--<persistence-unit name="reportengine">
+	<persistence-unit name="reportengine">
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>	
 		<shared-cache-mode>NONE</shared-cache-mode>
 		<properties>
 			<property name="eclipselink.jdbc.platform"
-				value="org.eclipse.persistence.platform.database.SQLServerPlatform" />
-			<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-			<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://163.50.47.7:1433;databaseName=REXDBTT;" />
-			<property name="javax.persistence.jdbc.user" value="OPMSDBA" />
-			<property name="javax.persistence.jdbc.password" value="OPMSDBA" />
+				value="org.eclipse.persistence.platform.database.MySQLPlatform" />
+			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/nacht" />
+			<property name="javax.persistence.jdbc.user" value="root" />
+			<property name="javax.persistence.jdbc.password" value="SQLNacht" />
 			<property name="eclipselink.logging.level" value="FINE" />
 			<property name="eclipselink.ddl-generation" value="create-tables" />
       		<property name="eclipselink.ddl-generation.output-mode" value="database" />
 		</properties>
-	</persistence-unit>-->
+	</persistence-unit>
 	
-	<persistence-unit name="reportengine">
+	<!--<persistence-unit name="reportengine">
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
 		<properties>
@@ -53,6 +53,6 @@
 			<property name="eclipselink.ddl-generation.output-mode"
 				value="database" />
 		</properties>
-	</persistence-unit>
+	</persistence-unit>-->
 
 </persistence>
